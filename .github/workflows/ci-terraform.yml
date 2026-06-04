@@ -1,0 +1,69 @@
+name: CI · Terraform (reusable)
+
+# Reusable CI para repos IaC (Terraform). Gates ESTÁTICOS — nenhum precisa de
+# credencial de cloud, então roda em qualquer PR com segurança:
+#   - terraform fmt -check  (bloqueante)
+#   - terraform validate    (bloqueante)
+#   - tflint                (bloqueante)
+#   - checkov               (bloqueante · misconfig/segurança)
+#
+# `terraform plan` em PR exige OIDC (Workload Identity Federation) → fase futura.
+# Quando o OIDC estiver montado no sapians-infra, adicionar um job `plan` que
+# autentica via `google-github-actions/auth` e posta o plano como comentário.
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        description: "Diretório do root module (ex: environments/prod)"
+        type: string
+        default: "environments/prod"
+      terraform-version:
+        description: "Versão do Terraform"
+        type: string
+        default: "1.9.8"
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  static:
+    name: fmt + validate + tflint + checkov
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ inputs.terraform-version }}
+
+      - name: Terraform fmt
+        run: terraform fmt -check -recursive
+
+      - name: Terraform init (no backend)
+        working-directory: ${{ inputs.working-directory }}
+        run: terraform init -backend=false
+
+      - name: Terraform validate
+        working-directory: ${{ inputs.working-directory }}
+        run: terraform validate
+
+      - name: Setup tflint
+        uses: terraform-linters/setup-tflint@v4
+
+      - name: Run tflint
+        run: tflint --recursive
+
+      - name: Checkov (IaC misconfig scan)
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: .
+          framework: terraform
+          quiet: true
+          soft_fail: false

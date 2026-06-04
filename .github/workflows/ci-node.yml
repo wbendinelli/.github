@@ -1,0 +1,94 @@
+name: CI · Node (reusable)
+
+# Reusable CI para repos TS/Node (pnpm + Biome). Fonte única — extraído do
+# CI de referência do sapians-xreset. Cada repo chama via `uses:` e mantém
+# sua própria política de trigger/custo no caller (push-only, paths-ignore…).
+#
+# Gates BLOQUEANTES: lint · typecheck · build · test.
+# O step de build/test é condicional (inputs) e o test tem guard hashFiles.
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: "Versão do Node"
+        type: string
+        default: "22"
+      pnpm-version:
+        description: "Versão do pnpm (precisa bater com packageManager)"
+        type: string
+        default: "9.15.9"
+      working-directory:
+        description: "Diretório do projeto (monorepo root por padrão)"
+        type: string
+        default: "."
+      run-build:
+        description: "Rodar pnpm build"
+        type: boolean
+        default: true
+      run-test:
+        description: "Rodar pnpm test (com guard hashFiles)"
+        type: boolean
+        default: true
+      registry-scope:
+        description: "Scope do GH Packages registry"
+        type: string
+        default: "@sapians"
+
+# secrets: inherit no caller → GITHUB_TOKEN disponível pra ler GH Packages.
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  verify:
+    name: Lint + Typecheck + Build + Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: read
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: ${{ inputs.pnpm-version }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: pnpm
+          cache-dependency-path: ${{ inputs.working-directory }}/pnpm-lock.yaml
+          registry-url: "https://npm.pkg.github.com"
+          scope: ${{ inputs.registry-scope }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        env:
+          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Lint (Biome)
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build
+        if: ${{ inputs.run-build }}
+        run: pnpm build
+        env:
+          # Build-only env. Vazio quando o repo não define a var.
+          # Secrets de produção vivem nas settings da plataforma (Vercel).
+          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
+
+      - name: Test
+        if: ${{ inputs.run-test && (hashFiles('**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts') != '') }}
+        run: pnpm test

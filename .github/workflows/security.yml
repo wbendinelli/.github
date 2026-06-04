@@ -1,0 +1,37 @@
+name: Security (reusable)
+
+# Reusable security scan — roda em todos os tiers (app/service/lib/iac/content/docs).
+# Core: gitleaks (secret scanning). Fetch full history pra varrer todo o passado.
+#
+# OIDC, CodeQL/Semgrep e dependency-review entram em fases futuras (SAST só nos
+# repos que tocam dados de usuário: xreset + api).
+
+on:
+  workflow_call:
+    inputs:
+      full-history:
+        description: "Varrer todo o histórico git (fetch-depth 0)"
+        type: boolean
+        default: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  gitleaks:
+    name: gitleaks (secret scan)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: ${{ inputs.full-history && 0 || 1 }}
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

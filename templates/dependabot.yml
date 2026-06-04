@@ -1,0 +1,27 @@
+# Template padrão — copiar pra .github/dependabot.yml de cada repo ativo.
+# Ajustar os `package-ecosystem` ao que o repo realmente usa.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule: { interval: weekly }
+    groups:
+      actions: { patterns: ["*"] }
+
+  # TS/Node (apps/libs):
+  - package-ecosystem: npm
+    directory: "/"
+    schedule: { interval: weekly }
+    groups:
+      minor-patch:
+        update-types: ["minor", "patch"]
+
+  # Python (api/corpus) — descomentar onde aplicável:
+  # - package-ecosystem: pip
+  #   directory: "/"
+  #   schedule: { interval: weekly }
+
+  # Terraform (infra) — descomentar:
+  # - package-ecosystem: terraform
+  #   directory: "/"
+  #   schedule: { interval: weekly }

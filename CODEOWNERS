@@ -1,0 +1,3 @@
+# CODEOWNERS default (fallback org-wide via wbendinelli/.github).
+# Repos podem sobrescrever com seu próprio .github/CODEOWNERS.
+* @wbendinelli
