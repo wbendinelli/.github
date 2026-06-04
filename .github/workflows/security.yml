@@ -47,5 +47,29 @@ jobs:
             | tar -xz -C /usr/local/bin gitleaks
           gitleaks version
 
+      - name: Baseline gitleaks config (se o repo não tiver o seu)
+        run: |
+          set -euo pipefail
+          if [ -f .gitleaks.toml ] || [ -f gitleaks.toml ]; then
+            echo "Repo tem .gitleaks.toml — usando o dele."
+          else
+            cat > /tmp/gitleaks-baseline.toml <<'TOML'
+          title = "SAPIANS gitleaks baseline"
+          [extend]
+          useDefault = true
+          # Arquivos de exemplo/template contêm placeholders (chaves vazias), não segredos.
+          [allowlist]
+          description = "Example/sample/template files"
+          paths = [
+            '''(^|/)\.env\.example$''',
+            '''(^|/)\.env\.sample$''',
+            '''.*\.example$''',
+            '''.*\.sample$''',
+            '''.*\.template$''',
+          ]
+          TOML
+            echo "GITLEAKS_CONFIG=/tmp/gitleaks-baseline.toml" >> "$GITHUB_ENV"
+          fi
+
       - name: Scan git history for secrets
-        run: gitleaks git . --redact --no-banner --verbose
+        run: gitleaks git . --redact --no-banner --verbose ${GITLEAKS_CONFIG:+--config "$GITLEAKS_CONFIG"}
