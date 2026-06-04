@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Handbook do golden path
+    url: https://github.com/wbendinelli/sapians-platform/blob/main/handbook/golden-path.md
+    about: O padrão de engenharia SAPIANS (o porquê, tiers, decisões).
+  - name: Troubleshooting
+    url: https://github.com/wbendinelli/.github/blob/main/docs/troubleshooting.md
+    about: Falhas comuns de CI/CD e como resolver antes de abrir issue.
