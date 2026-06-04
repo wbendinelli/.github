@@ -1,0 +1,62 @@
+name: Brand lint (reusable)
+
+# Guardrail de marca: "SAPIANS" é sempre caixa-alta em prosa. Bloqueia PR que
+# introduza a forma title-case "Sapians" em arquivos .md. Reusa o regex canônico
+# de sapians-docs (validate.ts BRAND_BAD_FORM) — word-boundary preserva
+# identificadores técnicos (@sapians/…, sapians-repo, sapians.com.br, paths).
+# Script canônico (com --fix): scripts/brand-lint.mjs neste repo.
+
+on:
+  workflow_call: {}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  brand-lint:
+    name: brand-lint (.md prose)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Lint brand casing
+        run: |
+          cat > /tmp/brand-lint.mjs <<'BRANDLINT'
+          import { readFileSync, readdirSync, statSync } from "node:fs";
+          import { join, basename, extname } from "node:path";
+          const DETECT = /(?<![a-zA-Z0-9_/\-@.])Sapians(?![a-zA-Z0-9_/\-])/;
+          const DENY_DIR = new Set(["node_modules", ".git", "dist", "build", ".next", "coverage", ".turbo", ".vercel", "__pycache__"]);
+          const deny = (p) => {
+            const b = basename(p);
+            const u = p.replace(/\\/g, "/");
+            return u.includes("/reports/eval/") || /^CHANGELOG/i.test(b) || b === "STYLE.md";
+          };
+          function* walk(d) {
+            let es;
+            try { es = readdirSync(d, { withFileTypes: true }); } catch { return; }
+            for (const e of es) {
+              const f = join(d, e.name);
+              if (e.isDirectory()) { if (!DENY_DIR.has(e.name)) yield* walk(f); }
+              else yield f;
+            }
+          }
+          let v = 0;
+          for (const f of walk(".")) {
+            if (deny(f)) continue;
+            if (![".md", ".mdx"].includes(extname(f))) continue;
+            let c;
+            try { c = readFileSync(f, "utf8"); } catch { continue; }
+            if (!c.includes("Sapians")) continue;
+            c.split("\n").forEach((ln, i) => {
+              if (DETECT.test(ln)) { v++; console.log(`${f}:${i + 1}: ${ln.trim().slice(0, 100)}`); }
+            });
+          }
+          console.log(v === 0 ? "✔ brand-lint: nenhuma violação." : `✘ brand-lint: ${v} violação(ões) — marca deve ser SAPIANS (caixa-alta) em prosa.`);
+          process.exit(v > 0 ? 1 : 0);
+          BRANDLINT
+          node /tmp/brand-lint.mjs
