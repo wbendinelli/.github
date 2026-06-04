@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.1](https://github.com/wbendinelli/.github/compare/v0.2.0...v0.2.1) (2026-06-04)
+
+
+### Documentation
+
+* SOTA do .github — workflow reference, onboarding, docs/, MAINTAINERS ([#7](https://github.com/wbendinelli/.github/issues/7)) ([b2fcd26](https://github.com/wbendinelli/.github/commit/b2fcd26706afcc3399d8a6977746655678dc2025))
+
+
+### Continuous Integration
+
+* test release-please-action v5 (corrigir auto-cut da release) ([#9](https://github.com/wbendinelli/.github/issues/9)) ([bafe508](https://github.com/wbendinelli/.github/commit/bafe508c6734d623f906b3c70f196d2461a8590e))
+
 ## [0.2.0](https://github.com/wbendinelli/.github/compare/v0.1.1...v0.2.0) (2026-06-04)
 
 
