@@ -1,15 +1,13 @@
 name: CI · Terraform (reusable)
 
 # Reusable CI para repos IaC (Terraform). Gates ESTÁTICOS — nenhum precisa de
-# credencial de cloud, então roda em qualquer PR com segurança:
-#   - terraform fmt -check  (bloqueante)
-#   - terraform validate    (bloqueante)
-#   - tflint                (bloqueante)
-#   - checkov               (bloqueante · misconfig/segurança)
+# credencial de cloud, então roda em qualquer PR com segurança.
+#
+# `validate` SEMPRE bloqueia (correção real). fmt/tflint/checkov seguem o
+# ratchet: com `strict: false` (adoção) rodam como report (continue-on-error);
+# com `strict: true` bloqueiam. Apertar conforme o repo é limpo.
 #
 # `terraform plan` em PR exige OIDC (Workload Identity Federation) → fase futura.
-# Quando o OIDC estiver montado no sapians-infra, adicionar um job `plan` que
-# autentica via `google-github-actions/auth` e posta o plano como comentário.
 
 on:
   workflow_call:
@@ -22,6 +20,10 @@ on:
         description: "Versão do Terraform"
         type: string
         default: "1.9.8"
+      strict:
+        description: "fmt/tflint/checkov bloqueiam? (false = report/adoção)"
+        type: boolean
+        default: true
 
 defaults:
   run:
@@ -45,6 +47,7 @@ jobs:
 
       - name: Terraform fmt
         run: terraform fmt -check -recursive
+        continue-on-error: ${{ !inputs.strict }}
 
       - name: Terraform init (no backend)
         working-directory: ${{ inputs.working-directory }}
@@ -59,11 +62,13 @@ jobs:
 
       - name: Run tflint
         run: tflint --recursive
+        continue-on-error: ${{ !inputs.strict }}
 
       - name: Checkov (IaC misconfig scan)
         uses: bridgecrewio/checkov-action@v12
+        continue-on-error: ${{ !inputs.strict }}
         with:
           directory: .
           framework: terraform
           quiet: true
-          soft_fail: false
+          soft_fail: ${{ !inputs.strict }}
