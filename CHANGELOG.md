@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/wbendinelli/.github/compare/v0.1.1...v0.2.0) (2026-06-04)
+
+
+### Features
+
+* **brand:** brand-lint guardrail + fixer (SAPIANS uppercase) ([#5](https://github.com/wbendinelli/.github/issues/5)) ([e4791f8](https://github.com/wbendinelli/.github/commit/e4791f81c8161b3a474a7bf237a9d4d05545db30))
+
 ## [0.1.1](https://github.com/wbendinelli/.github/compare/v0.1.0...v0.1.1) (2026-06-04)
 
 
