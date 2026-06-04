@@ -9,6 +9,9 @@ updates:
       patterns:
       - '*'
   ignore:
+  - dependency-name: googleapis/release-please-action
+    update-types:
+    - version-update:semver-major
   - dependency-name: hashicorp/setup-terraform
     update-types:
     - version-update:semver-major
