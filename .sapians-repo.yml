@@ -1,0 +1,4 @@
+# Declaração de tier do golden path SAPIANS.
+class: Config
+tier: D
+description: Config central de engenharia (reusable workflows + community health).
