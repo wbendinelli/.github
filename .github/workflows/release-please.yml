@@ -1,0 +1,38 @@
+name: Release Please (reusable)
+
+# Reusable de release automatizada — extraído do sapians-xreset.
+# Cada repo chama isto e mantém seu próprio release-please-config.json +
+# .release-please-manifest.json (release-type por repo: node/python/simple/
+# terraform-module). O fluxo:
+#   push main → PR de release (bump + CHANGELOG) → merge → tag + GitHub Release.
+
+on:
+  workflow_call:
+    inputs:
+      config-file:
+        type: string
+        default: "release-please-config.json"
+      manifest-file:
+        type: string
+        default: ".release-please-manifest.json"
+      release-as:
+        description: "Forçar versão específica (ex: 1.0.0)"
+        type: string
+        default: ""
+
+jobs:
+  release-please:
+    name: Release Please
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Run release-please
+        uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: ${{ inputs.config-file }}
+          manifest-file: ${{ inputs.manifest-file }}
+          release-as: ${{ inputs.release-as }}
