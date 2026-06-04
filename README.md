@@ -1,38 +1,59 @@
-# .github — SAPIANS golden path (config central)
+# .github — SAPIANS golden path
 
 [![Lint workflows](https://github.com/wbendinelli/.github/actions/workflows/lint.yml/badge.svg)](https://github.com/wbendinelli/.github/actions/workflows/lint.yml)
 [![Release](https://img.shields.io/github/v/release/wbendinelli/.github?sort=semver)](https://github.com/wbendinelli/.github/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
-> **Tier:** `D` · **Classe:** `Docs/Config`
+> **Tier:** `D` · **Classe:** `Config`
 
-## O que é / Por quê
+Config **central de engenharia** dos repos `sapians-*`. Hospeda os **reusable workflows** (`workflow_call`) que cada repo chama em ~12 linhas, os **community health files** herdados, os **templates** e a ferramenta de **brand-lint**. Fonte única de CI/CD: um bump de versão de action aqui propaga a todos os repos.
 
-Repositório **central de engenharia** dos repos `sapians-*` (sob a conta `wbendinelli`).
-Hospeda os **reusable workflows** (`workflow_call`) que cada repo chama em ~12 linhas,
-os **community health files** herdados org-wide, e os **templates** do golden path.
+- **Aqui = como USAR** o golden path (workflows, inputs, onboarding).
+- **Por quê / o padrão** = handbook em [`sapians-platform/handbook/golden-path.md`](https://github.com/wbendinelli/sapians-platform/blob/main/handbook/golden-path.md).
+- Manutenção dos workflows: [`docs/maintaining-workflows.md`](./docs/maintaining-workflows.md) · Troubleshooting: [`docs/troubleshooting.md`](./docs/troubleshooting.md).
 
-É a fonte única de CI/CD: bumpar uma versão de action aqui propaga a todos os repos.
-Documentação humana do padrão vive no handbook em `sapians-platform`.
+## Como funciona (golden path)
+
+```mermaid
+flowchart TD
+    A[push / PR] --> B{caller chama reusable}
+    B --> C[ci-node / ci-python / ci-terraform]
+    B --> D[security · gitleaks]
+    B --> E[brand-lint · SAPIANS]
+    C & D & E --> F{verde?}
+    F -- não --> A
+    F -- sim, em main --> G[release-please]
+    G --> H[PR de release: bump + CHANGELOG]
+    H -- merge --> I[git tag + GitHub Release]
+    I --> J[deploy / publish · fora do escopo do .github]
+```
 
 ## Reusable workflows
 
 | Workflow | Para | Gates |
 |---|---|---|
-| `ci-node.yml` | Apps/Libs TS (pnpm + Biome) | lint · typecheck · build · test (bloqueiam) |
-| `ci-python.yml` | Serviços Python (ruff + mypy + pytest) | ruff bloqueia · mypy/pytest report→block (ratchet) |
-| `ci-terraform.yml` | IaC | fmt · validate · tflint · checkov (bloqueiam) |
-| `security.yml` | Todos | gitleaks (secret scan) |
+| [`ci-node.yml`](./.github/workflows/ci-node.yml) | Apps/Libs TS (pnpm + Biome) | lint · typecheck · build · test |
+| [`ci-python.yml`](./.github/workflows/ci-python.yml) | Serviços Python (ruff + mypy + pytest) | ruff bloqueia · mypy/pytest ratchet |
+| [`ci-terraform.yml`](./.github/workflows/ci-terraform.yml) | IaC (Terraform) | validate bloqueia · fmt/tflint/checkov ratchet |
+| [`security.yml`](./.github/workflows/security.yml) | Todos | gitleaks (binário, least-privilege) |
+| [`brand-lint.yml`](./.github/workflows/brand-lint.yml) | Todos | "SAPIANS" caixa-alta em prosa (.md) |
+| [`release-please.yml`](./.github/workflows/release-please.yml) | Todos | release automática (conventional commits) |
 
-### Como um repo chama (Quickstart)
+Política de gate: **bloqueiam sempre** lint/typecheck/build/test/validate/secret-scan. **Ratchet (report→block)** mypy/coverage/fmt/tflint/checkov — começam como report na adoção e apertam conforme o repo limpa. Ver [`docs/ratchet-pattern.md`](./docs/ratchet-pattern.md).
+
+## Workflow Reference
+
+### `ci-node.yml` — TS/Node (pnpm + Biome)
+| Input | Tipo | Default | Propósito |
+|---|---|---|---|
+| `node-version` | string | `"22"` | Versão do Node (pinar no `.nvmrc`) |
+| `pnpm-version` | string | `"9.15.9"` | Deve bater com `packageManager` do package.json |
+| `working-directory` | string | `"."` | Root (monorepo: `.`) |
+| `run-build` | bool | `true` | Rodar `pnpm build` (libs sem build: `false`) |
+| `run-test` | bool | `true` | Rodar `pnpm test` (guard `hashFiles` pula se não há testes) |
+| `registry-scope` | string | `"@sapians"` | Scope do GH Packages |
 
 ```yaml
-# .github/workflows/ci.yml no repo consumidor
-name: CI
-on:
-  push: { branches: [main], paths-ignore: ["**.md"] }
-  workflow_dispatch: {}
-concurrency: { group: ci-${{ github.ref }}, cancel-in-progress: true }
 jobs:
   ci:
     uses: wbendinelli/.github/.github/workflows/ci-node.yml@main
@@ -41,20 +62,71 @@ jobs:
     secrets: inherit
 ```
 
-## Toolchain pinado (golden path)
+### `ci-python.yml` — Python (ruff + mypy + pytest)
+| Input | Tipo | Default | Propósito |
+|---|---|---|---|
+| `python-version` | string | `"3.12"` | Versão do Python |
+| `install-target` | string | `".[dev]"` | Alvo do `pip install -e` |
+| `mypy-path` | string | `""` | Caminho do mypy (vazio = pula) |
+| `mypy-blocking` | bool | `false` | mypy bloqueia? (ratchet) |
+| `pytest-marker` | string | `"not integration"` | Marcador do pytest |
+| `pytest-blocking` | bool | `false` | pytest bloqueia? (ratchet) |
 
+`ruff` **sempre bloqueia**; mypy/pytest são report até `*-blocking: true`.
+
+### `ci-terraform.yml` — IaC
+| Input | Tipo | Default | Propósito |
+|---|---|---|---|
+| `working-directory` | string | `"environments/prod"` | Root module |
+| `terraform-version` | string | `"1.9.8"` | Versão do Terraform |
+| `strict` | bool | `true` | fmt/tflint/checkov bloqueiam? (`false` = adoção/report) |
+
+`validate` **sempre bloqueia**. Adoção: começar `strict: false`, apertar depois.
+
+### `security.yml` — gitleaks
+| Input | Tipo | Default | Propósito |
+|---|---|---|---|
+| `full-history` | bool | `true` | Varrer todo o histórico (fetch-depth 0) |
+| `gitleaks-version` | string | `"8.24.3"` | Versão do binário |
+
+Roda o binário gitleaks direto (sem a action — least-privilege, sem API). Baseline allowlista `*.example/*.sample/*.template`. Ver [`docs/gitleaks-baseline.md`](./docs/gitleaks-baseline.md).
+
+### `release-please.yml`
+| Input | Tipo | Default | Propósito |
+|---|---|---|---|
+| `config-file` | string | `"release-please-config.json"` | Config por repo |
+| `manifest-file` | string | `".release-please-manifest.json"` | Manifest por repo |
+| `release-as` | string | `""` | Forçar versão |
+
+> ⚠️ Quirk conhecido do `release-please-action@v4`: após mergear o PR de release ele às vezes não corta a GitHub Release sozinho. Ver [`docs/troubleshooting.md`](./docs/troubleshooting.md#release-please).
+
+## Onboarding — adicionar um repo novo ao golden path
+
+1. **Pinar toolchain:** `.nvmrc` (22) / `.python-version` (3.12) / `packageManager` (pnpm@9.15.9).
+2. **Criar o caller** `.github/workflows/ci.yml` chamando o reusable do tier (exemplos acima). Caller mantém a própria política de trigger (push/PR, paths-ignore, concurrency).
+3. **Security + brand:** adicionar `security.yml` e `brand-lint.yml` callers.
+4. **Releases:** copiar `release-please.yml` caller + `release-please-config.json` + `.release-please-manifest.json` (ajustar `release-type`: node/python/simple/terraform-module + `package-name`).
+5. **Dependabot:** copiar [`templates/dependabot.yml`](./templates/dependabot.yml) pra `.github/dependabot.yml`.
+6. **README:** partir de [`templates/README.template.md`](./templates/README.template.md).
+7. **Branch protection** em `main`: exigir o check `ci`, `strict:false`, `enforce_admins:false`. Habilitar `can_approve_pull_request_reviews` (Settings → Actions) senão release-please falha.
+
+Detalhe do padrão e dos tiers: handbook (link acima).
+
+## Toolchain pinado
 | Tool | Versão |
 |---|---|
 | Node | 22 |
 | pnpm | 9.15.9 |
 | Python | 3.12 |
-| Actions | checkout@v6 · setup-node@v6 · setup-python@v5 · pnpm/action-setup@v6 |
+| Terraform | 1.9.x |
+| Actions | checkout@v6 · setup-node@v6 · setup-python@v6 · pnpm/action-setup@v6 |
 
-## Status
+## Estrutura
+- `.github/workflows/` — reusables + lint/release próprios.
+- `.github/ISSUE_TEMPLATE/` — templates de issue.
+- `scripts/brand-lint.mjs` — linter/fixer de marca (`--fix`, `--all`).
+- `templates/` — README skeleton + dependabot.
+- `docs/` — runbooks de manutenção.
+- [`MAINTAINERS.md`](./MAINTAINERS.md) · [`CONTRIBUTING.md`](./CONTRIBUTING.md) · [`SECURITY.md`](./SECURITY.md).
 
-Fase 1 do golden path (implementação de referência: xreset · api · docs · corpus · infra · platform).
-
-## Links
-
-- Handbook do golden path: `sapians-platform` (handbook/)
-- Template de README: [`templates/README.template.md`](./templates/README.template.md)
+> `profile/README.md` só renderiza publicamente se o repo for **público** (este é privado).
