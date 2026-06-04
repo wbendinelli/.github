@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/wbendinelli/.github/compare/v0.2.1...v0.2.2) (2026-06-04)
+
+
+### Documentation
+
+* **troubleshooting:** v5 testado, não resolve o auto-cut ([7a3ac8d](https://github.com/wbendinelli/.github/commit/7a3ac8de17aaa587c1ebc8e69c44af2b7a4a0e02))
+
 ## [0.2.1](https://github.com/wbendinelli/.github/compare/v0.2.0...v0.2.1) (2026-06-04)
 
 
