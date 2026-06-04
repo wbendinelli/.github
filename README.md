@@ -1,5 +1,7 @@
 # .github — SAPIANS golden path (config central)
 
+[![Lint workflows](https://github.com/wbendinelli/.github/actions/workflows/lint.yml/badge.svg)](https://github.com/wbendinelli/.github/actions/workflows/lint.yml)
+[![Release](https://img.shields.io/github/v/release/wbendinelli/.github?sort=semver)](https://github.com/wbendinelli/.github/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
 > **Tier:** `D` · **Classe:** `Docs/Config`

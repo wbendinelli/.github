@@ -1,0 +1,25 @@
+name: Release
+
+# Release automation do próprio repo .github — chama seu reusable release-please
+# localmente (release-type simple).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      release-as:
+        description: "Forçar versão específica"
+        required: false
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    uses: ./.github/workflows/release-please.yml
+    permissions:
+      contents: write
+      pull-requests: write
+    with:
+      release-as: ${{ github.event.inputs.release-as }}

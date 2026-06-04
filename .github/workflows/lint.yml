@@ -1,0 +1,41 @@
+name: Lint workflows
+
+# CI do próprio repo .github: valida os reusable workflows com actionlint
+# (sintaxe, expressões, shellcheck dos run-blocks). É o gate que impede
+# subir um reusable quebrado que afetaria todos os repos.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: lint-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  actionlint:
+    name: actionlint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install actionlint
+        run: |
+          set -euo pipefail
+          VER="1.7.7"
+          curl -sSfL "https://github.com/rhysd/actionlint/releases/download/v${VER}/actionlint_${VER}_linux_amd64.tar.gz" \
+            | tar -xz -C /usr/local/bin actionlint
+          actionlint --version
+
+      - name: Run actionlint
+        run: actionlint -color
