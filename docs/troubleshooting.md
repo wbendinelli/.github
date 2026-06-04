@@ -14,7 +14,7 @@ gh release create vX.Y.Z --target main --title vX.Y.Z \
   --notes "$(gh api repos/OWNER/REPO/contents/CHANGELOG.md --jq '.content' | base64 -d | awk '/^## /{c++} c==1{print} c==2{exit}')"
 gh pr edit <release-pr#> --remove-label "autorelease: pending"
 ```
-**Fix permanente a investigar:** testar `release-please-action@v5` (segurado no dependabot) ou usar um PAT dedicado.
+**Fix permanente:** o `release-please-action@v5` foi testado e **NÃO resolve** (aborta igual ao v4 — não é a versão da action). O quirk é mais fundo no setup (provavelmente o par `release-type: simple` + manifest, ou precisa de PAT em vez do GITHUB_TOKEN). Por ora, o nudge manual acima é o workaround.
 
 ## "GitHub Actions is not permitted to create or approve pull requests"
 
