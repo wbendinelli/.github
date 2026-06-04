@@ -3,6 +3,10 @@ name: Security (reusable)
 # Reusable security scan — roda em todos os tiers (app/service/lib/iac/content/docs).
 # Core: gitleaks (secret scanning). Fetch full history pra varrer todo o passado.
 #
+# Comentários de PR do gitleaks-action ficam DESLIGADOS (exigiriam pull-requests:write;
+# mantemos least-privilege contents:read). O resultado aparece no job summary + no
+# exit code (falha o CI se achar segredo).
+#
 # OIDC, CodeQL/Semgrep e dependency-review entram em fases futuras (SAST só nos
 # repos que tocam dados de usuário: xreset + api).
 
@@ -29,9 +33,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          fetch-depth: ${{ inputs.full-history && 0 || 1 }}
+          # String '0'/'1' — em expressão GH, 0 é falsy e quebraria o `&& 0 || 1`.
+          fetch-depth: ${{ inputs.full-history && '0' || '1' }}
 
       - name: Run gitleaks
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: "false"
+          GITLEAKS_ENABLE_SUMMARY: "true"
