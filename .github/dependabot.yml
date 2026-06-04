@@ -7,3 +7,13 @@ updates:
     groups:
       actions:
         patterns: ["*"]
+    ignore:
+      # Majors segurados para teste deliberado (podem ter breaking changes):
+      # - release-please-action v5: muda comportamento do release pipeline.
+      # - setup-terraform v4 / setup-tflint v6: tocam o ci-terraform (infra).
+      - dependency-name: "googleapis/release-please-action"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "hashicorp/setup-terraform"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "terraform-linters/setup-tflint"
+        update-types: ["version-update:semver-major"]
