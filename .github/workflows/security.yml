@@ -1,11 +1,10 @@
 name: Security (reusable)
 
 # Reusable security scan — roda em todos os tiers (app/service/lib/iac/content/docs).
-# Core: gitleaks (secret scanning). Fetch full history pra varrer todo o passado.
-#
-# Comentários de PR do gitleaks-action ficam DESLIGADOS (exigiriam pull-requests:write;
-# mantemos least-privilege contents:read). O resultado aparece no job summary + no
-# exit code (falha o CI se achar segredo).
+# Core: gitleaks (secret scanning) via BINÁRIO direto — sem o gitleaks-action,
+# que faz chamadas à API do GitHub (comentários/PR) e exige permissões extras +
+# licença em orgs. Rodar o binário é least-privilege (só contents:read), sem
+# dependência de API, e falha o CI no exit code se achar segredo.
 #
 # OIDC, CodeQL/Semgrep e dependency-review entram em fases futuras (SAST só nos
 # repos que tocam dados de usuário: xreset + api).
@@ -17,6 +16,10 @@ on:
         description: "Varrer todo o histórico git (fetch-depth 0)"
         type: boolean
         default: true
+      gitleaks-version:
+        description: "Versão do gitleaks"
+        type: string
+        default: "8.24.3"
 
 defaults:
   run:
@@ -33,12 +36,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          # String '0'/'1' — em expressão GH, 0 é falsy e quebraria o `&& 0 || 1`.
+          # String '0'/'1' — em expressão GH, 0 é falsy e quebraria `&& 0 || 1`.
           fetch-depth: ${{ inputs.full-history && '0' || '1' }}
 
-      - name: Run gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_ENABLE_COMMENTS: "false"
-          GITLEAKS_ENABLE_SUMMARY: "true"
+      - name: Install gitleaks
+        run: |
+          set -euo pipefail
+          VER="${{ inputs.gitleaks-version }}"
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${VER}/gitleaks_${VER}_linux_x64.tar.gz" \
+            | tar -xz -C /usr/local/bin gitleaks
+          gitleaks version
+
+      - name: Scan git history for secrets
+        run: gitleaks git . --redact --no-banner --verbose
