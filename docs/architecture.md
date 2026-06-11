@@ -56,3 +56,4 @@ flowchart LR
 | I | IaC | fmt·validate·tflint·checkov·security |
 | C | Content | schema-validate·security·brand |
 | D | Docs | security·brand (leve) |
+| D | ClientDelivery | security·brand — projeto de entrega de cliente (scaffold: [`sapians-client-template`](https://github.com/wbendinelli/sapians-client-template)) |
