@@ -83,8 +83,9 @@ jobs:
 | `working-directory` | string | `"environments/prod"` | Root module |
 | `terraform-version` | string | `"1.9.8"` | Versão do Terraform |
 | `strict` | bool | `true` | fmt/tflint/checkov bloqueiam? (`false` = adoção/report) |
+| `strict-fmt` | bool | `false` | só o fmt bloqueia (degrau do ratchet); tflint/checkov seguem `strict` |
 
-`validate` **sempre bloqueia**. Adoção: começar `strict: false`, apertar depois.
+`validate` **sempre bloqueia**. Adoção: começar `strict: false`, apertar depois — degrau intermediário `strict-fmt: true` (só fmt, gate trivial) antes do `strict: true` total.
 
 ### `security.yml` — gitleaks
 | Input | Tipo | Default | Propósito |

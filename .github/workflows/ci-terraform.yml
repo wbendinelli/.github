@@ -7,6 +7,10 @@ name: CI · Terraform (reusable)
 # ratchet: com `strict: false` (adoção) rodam como report (continue-on-error);
 # com `strict: true` bloqueiam. Apertar conforme o repo é limpo.
 #
+# `strict-fmt` permite apertar SÓ o fmt (gate trivial, zero falso-positivo)
+# mantendo tflint/checkov em report — o degrau natural do ratchet antes do
+# strict total. fmt bloqueia se `strict` OU `strict-fmt`.
+#
 # `terraform plan` em PR exige OIDC (Workload Identity Federation) → fase futura.
 
 on:
@@ -24,6 +28,10 @@ on:
         description: "fmt/tflint/checkov bloqueiam? (false = report/adoção)"
         type: boolean
         default: true
+      strict-fmt:
+        description: "Só o fmt bloqueia (degrau do ratchet); tflint/checkov seguem strict"
+        type: boolean
+        default: false
 
 defaults:
   run:
@@ -47,7 +55,7 @@ jobs:
 
       - name: Terraform fmt
         run: terraform fmt -check -recursive
-        continue-on-error: ${{ !inputs.strict }}
+        continue-on-error: ${{ !(inputs.strict || inputs.strict-fmt) }}
 
       - name: Terraform init (no backend)
         working-directory: ${{ inputs.working-directory }}
