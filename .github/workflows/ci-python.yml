@@ -6,6 +6,14 @@ name: CI · Python (reusable)
 #   - mypy   = report por padrão (gradual typing); vira bloqueante por input.
 #   - pytest = report por padrão (integração precisa de creds); bloqueante por input.
 # O ratchet (report → block) é um estado de migração documentado, não permanente.
+#
+# Gerenciador de pacotes: pip (default) ou uv (use-uv: true).
+#   - pip: setup-python + `pip install -e '<install-target>'` (sapians-api).
+#   - uv : setup-uv + `uv sync` (lockfile uv.lock) + `uv run …`. Inclui
+#     `ruff format --check` bloqueante. Decisão SAPIANS: uv é o padrão alvo
+#     da casa (ver ADR no sapians-platform); o pip segue suportado até a
+#     migração dos repos legados. A mudança é ADITIVA — com use-uv: false o
+#     caminho pip é byte-a-byte idêntico ao anterior.
 
 on:
   workflow_call:
@@ -14,8 +22,12 @@ on:
         description: "Versão do Python"
         type: string
         default: "3.12"
+      use-uv:
+        description: "Usar uv (uv sync + uv run) em vez de pip? Lockfile uv.lock."
+        type: boolean
+        default: false
       install-target:
-        description: "Alvo do pip install -e (ex: '.[dev]')"
+        description: "Alvo do pip install -e (ex: '.[dev]'). Ignorado se use-uv."
         type: string
         default: ".[dev]"
       mypy-path:
@@ -50,25 +62,48 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Setup Python
+      # --- Setup: pip (default) ou uv ---
+      - name: Setup Python (pip)
+        if: ${{ !inputs.use-uv }}
         uses: actions/setup-python@v6
         with:
           python-version: ${{ inputs.python-version }}
           cache: pip
 
-      - name: Install (runtime + dev)
+      - name: Setup uv
+        if: ${{ inputs.use-uv }}
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ inputs.python-version }}
+          enable-cache: true
+
+      # --- Install ---
+      - name: Install (pip · runtime + dev)
+        if: ${{ !inputs.use-uv }}
         run: |
           python -m pip install --upgrade pip
           pip install -e '${{ inputs.install-target }}'
 
-      - name: Lint (ruff) — bloqueante
-        run: ruff check .
+      - name: Install (uv · sync lockfile)
+        if: ${{ inputs.use-uv }}
+        run: uv sync
 
+      # --- Lint (ruff) — sempre bloqueante ---
+      - name: Lint (ruff) — bloqueante
+        run: ${{ inputs.use-uv && 'uv run ' || '' }}ruff check .
+
+      # Format check só no caminho uv (repos uv adotam ruff-format como gate).
+      - name: Format check (ruff format) — bloqueante
+        if: ${{ inputs.use-uv }}
+        run: uv run ruff format --check .
+
+      # --- Typecheck (mypy) ---
       - name: Typecheck (mypy)
         if: ${{ inputs.mypy-path != '' }}
-        run: mypy ${{ inputs.mypy-path }}
+        run: ${{ inputs.use-uv && 'uv run ' || '' }}mypy ${{ inputs.mypy-path }}
         continue-on-error: ${{ !inputs.mypy-blocking }}
 
+      # --- Test (pytest) ---
       - name: Test (pytest)
-        run: pytest -m "${{ inputs.pytest-marker }}"
+        run: ${{ inputs.use-uv && 'uv run ' || '' }}pytest -m "${{ inputs.pytest-marker }}"
         continue-on-error: ${{ !inputs.pytest-blocking }}

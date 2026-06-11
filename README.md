@@ -66,13 +66,16 @@ jobs:
 | Input | Tipo | Default | Propósito |
 |---|---|---|---|
 | `python-version` | string | `"3.12"` | Versão do Python |
-| `install-target` | string | `".[dev]"` | Alvo do `pip install -e` |
+| `use-uv` | bool | `false` | Usar `uv` (`uv sync` + `uv run`, lockfile `uv.lock`) em vez de pip |
+| `install-target` | string | `".[dev]"` | Alvo do `pip install -e` (ignorado se `use-uv`) |
 | `mypy-path` | string | `""` | Caminho do mypy (vazio = pula) |
 | `mypy-blocking` | bool | `false` | mypy bloqueia? (ratchet) |
 | `pytest-marker` | string | `"not integration"` | Marcador do pytest |
 | `pytest-blocking` | bool | `false` | pytest bloqueia? (ratchet) |
 
 `ruff` **sempre bloqueia**; mypy/pytest são report até `*-blocking: true`.
+
+**pip (default) vs uv:** `use-uv: false` mantém o caminho pip byte-a-byte (sapians-api). `use-uv: true` troca para `astral-sh/setup-uv` + `uv sync` + `uv run …` e adiciona `ruff format --check` bloqueante. uv é o **padrão alvo da SAPIANS** (ver ADR no sapians-platform); pip segue suportado até a migração dos repos legados.
 
 ### `ci-terraform.yml` — IaC
 | Input | Tipo | Default | Propósito |
