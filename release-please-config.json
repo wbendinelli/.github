@@ -3,19 +3,42 @@
   "release-type": "simple",
   "packages": {
     ".": {
-      "package-name": "dot-github",
       "changelog-path": "CHANGELOG.md",
       "include-component-in-tag": false,
       "include-v-in-tag": true,
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": false,
       "changelog-sections": [
-        { "type": "feat", "section": "Features", "hidden": false },
-        { "type": "fix", "section": "Bug Fixes", "hidden": false },
-        { "type": "docs", "section": "Documentation", "hidden": false },
-        { "type": "ci", "section": "Continuous Integration", "hidden": false },
-        { "type": "refactor", "section": "Code Refactoring", "hidden": false },
-        { "type": "chore", "section": "Miscellaneous Chores", "hidden": true }
+        {
+          "type": "feat",
+          "section": "Features",
+          "hidden": false
+        },
+        {
+          "type": "fix",
+          "section": "Bug Fixes",
+          "hidden": false
+        },
+        {
+          "type": "docs",
+          "section": "Documentation",
+          "hidden": false
+        },
+        {
+          "type": "ci",
+          "section": "Continuous Integration",
+          "hidden": false
+        },
+        {
+          "type": "refactor",
+          "section": "Code Refactoring",
+          "hidden": false
+        },
+        {
+          "type": "chore",
+          "section": "Miscellaneous Chores",
+          "hidden": true
+        }
       ]
     }
   },
