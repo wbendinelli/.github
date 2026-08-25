@@ -33,7 +33,8 @@ flowchart TD
 | Workflow | Para | Gates |
 |---|---|---|
 | [`ci-node.yml`](./.github/workflows/ci-node.yml) | Apps/Libs TS (pnpm + Biome) | lint · typecheck · build · test |
-| [`ci-python.yml`](./.github/workflows/ci-python.yml) | Serviços Python (ruff + mypy + pytest) | ruff bloqueia · mypy/pytest ratchet |
+| [`ci-python.yml`](./.github/workflows/ci-python.yml) | Serviços Python pip ou uv (ruff + mypy + pytest) | ruff bloqueia · mypy/pytest ratchet |
+| [`ci-python-uv.yml`](./.github/workflows/ci-python-uv.yml) | Serviços Python 100% uv (workspace/lockfile) | ruff check + ruff format + pytest, todos bloqueantes |
 | [`ci-terraform.yml`](./.github/workflows/ci-terraform.yml) | IaC (Terraform) | validate bloqueia · fmt/tflint/checkov ratchet |
 | [`security.yml`](./.github/workflows/security.yml) | Todos | gitleaks (binário, least-privilege) |
 | [`brand-lint.yml`](./.github/workflows/brand-lint.yml) | Todos | "SAPIANS" caixa-alta em prosa (.md) |
@@ -77,6 +78,25 @@ jobs:
 
 **pip (default) vs uv:** `use-uv: false` mantém o caminho pip byte-a-byte (sapians-api). `use-uv: true` troca para `astral-sh/setup-uv` + `uv sync` + `uv run …` e adiciona `ruff format --check` bloqueante. uv é o **padrão alvo da SAPIANS** (ver ADR no sapians-platform); pip segue suportado até a migração dos repos legados.
 
+### `ci-python-uv.yml` — Python 100% uv (workspace/lockfile)
+| Input | Tipo | Default | Propósito |
+|---|---|---|---|
+| `python-version` | string | `"3.12"` | Versão do Python |
+| `run-lint` | bool | `true` | Rodar `ruff check` + `ruff format --check` |
+| `run-tests` | bool | `true` | Rodar `pytest` |
+| `working-directory` | string | `"."` | Root do projeto/workspace |
+| `extra-install-args` | string | `""` | Args extras pro `uv sync` (ex: `--all-packages`) |
+
+Sem ratchet — os gates nascem bloqueantes (repos uv da SAPIANS partem de CI limpo). Generalizado do CI do [`sapians-engram`](https://github.com/wbendinelli/sapians-engram). Diferença pro `ci-python.yml`: aqui uv é o **único** gerenciador (sem caminho pip); usar `ci-python.yml` (`use-uv: true`) quando precisar do ratchet mypy/pytest.
+
+```yaml
+jobs:
+  ci:
+    uses: wbendinelli/.github/.github/workflows/ci-python-uv.yml@main
+    permissions: { contents: read }
+    with: { python-version: "3.12", extra-install-args: "--all-packages" }
+```
+
 ### `ci-terraform.yml` — IaC
 | Input | Tipo | Default | Propósito |
 |---|---|---|---|
@@ -115,6 +135,63 @@ Roda o binário gitleaks direto (sem a action — least-privilege, sem API). Bas
 7. **Branch protection** em `main`: exigir o check `ci`, `strict:false`, `enforce_admins:false`. Habilitar `can_approve_pull_request_reviews` (Settings → Actions) senão release-please falha.
 
 Detalhe do padrão e dos tiers: handbook (link acima).
+
+## Contrato de CI por tier
+
+O tier declarado em `.sapians-repo.yml` implica um contrato mínimo de *triggers* — evita cron duplicado entre workflows e evita gate ausente onde importa. Tiers completos: [`docs/architecture.md`](./docs/architecture.md#tiers-resumo--detalhe-no-handbook).
+
+| Tier | Perfil | Triggers |
+|---|---|---|
+| **A/B** (App·Service·Library — produto/ativo publicado) | PR gate obrigatório + push `main` + cron(s) mínimo(s) deduplicados | `pull_request`, `push: [main]`, no máx. 1 cron por preocupação (CI ≠ security ≠ canary) |
+| **I/C** (IaC·Content — interno, sem runtime servindo usuário) | PR-only ou dispatch-only, sem cron | `pull_request` (+ `workflow_dispatch` se precisar rodar manual) |
+| **D** (Config·Docs) | Mínimo — security + brand bastam | `pull_request`, `push: [main]` |
+
+Referências: [`sapians-engram`](https://github.com/wbendinelli/sapians-engram) (Python/uv — PR sempre roda `quality`; push filtra por `paths-ignore`) · `sapians-xreset` `gate.yml` (lanes classificadas pelo diff — job `changes` decide o que roda pesado) · [`scc5819/interpretable-ml-lectures`](https://github.com/scc5819/interpretable-ml-lectures) `canary.yml` (cron semanal non-blocking, badge próprio, não afeta o gate de PR).
+
+### Templates de caller (pinados em `@v0.3.0`)
+
+```yaml
+# Node (pnpm + Biome)
+jobs:
+  ci:
+    uses: wbendinelli/.github/.github/workflows/ci-node.yml@v0.3.0
+    permissions: { contents: read, packages: read }
+    with: { node-version: "22", pnpm-version: "9.15.9" }
+    secrets: inherit
+
+# Python — pip (ratchet mypy/pytest)
+jobs:
+  ci:
+    uses: wbendinelli/.github/.github/workflows/ci-python.yml@v0.3.0
+    permissions: { contents: read }
+    with: { python-version: "3.12", install-target: ".[dev]" }
+
+# Python — uv (workspace/lockfile, sem ratchet)
+jobs:
+  ci:
+    uses: wbendinelli/.github/.github/workflows/ci-python-uv.yml@v0.3.0
+    permissions: { contents: read }
+    with: { python-version: "3.12", extra-install-args: "--all-packages" }
+
+# Terraform
+jobs:
+  ci:
+    uses: wbendinelli/.github/.github/workflows/ci-terraform.yml@v0.3.0
+    permissions: { contents: read }
+    with: { working-directory: "environments/prod", strict: false }
+```
+
+> O padrão do repo é `@main` (ver [`docs/maintaining-workflows.md`](./docs/maintaining-workflows.md#versionamento)); pinar em `@v0.3.0` é opcional, pra callers que querem upgrade deliberado (ex.: `sapians-engram`@`v0.2.2`, `sapians-xreset` pinado por SHA).
+
+### Auditoria mensal
+
+Loop de 3 comandos pra achar CI drift na fleet (trigger duplicado, workflow morto, repo fora do golden path):
+
+```bash
+gh repo list wbendinelli --limit 300 --json name,pushedAt,isArchived
+gh api repos/wbendinelli/<repo>/contents/.github/workflows
+gh api repos/wbendinelli/<repo>/contents/.github/workflows/<wf>.yml -q .content | base64 -d | grep -n cron
+```
 
 ## Toolchain pinado
 | Tool | Versão |
