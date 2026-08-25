@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.3.0](https://github.com/wbendinelli/.github/compare/v0.2.2...v0.3.0) (2026-08-25)
+
+
+### Features
+
+* **ci-python-uv:** add lean reusable CI for uv-only Python repos ([db9eb38](https://github.com/wbendinelli/.github/commit/db9eb387274242a958fb0555718d5a72c8468a1b))
+* **ci-python:** suporte a uv (use-uv) preservando o caminho pip ([#11](https://github.com/wbendinelli/.github/issues/11)) ([e07c182](https://github.com/wbendinelli/.github/commit/e07c1828e1756d5c2179f4bb019625abcd3f0829))
+* **ci-terraform:** input strict-fmt (degrau do ratchet) preservando default ([#13](https://github.com/wbendinelli/.github/issues/13)) ([3d97214](https://github.com/wbendinelli/.github/commit/3d97214bd892724263df7695d94b5f1432a5060d))
+
+
+### Documentation
+
+* **architecture:** registra classe ClientDelivery (tier D) ([7c7ca6b](https://github.com/wbendinelli/.github/commit/7c7ca6bc3149c0a3a50badb9b1e96e88436017e9))
+* **readme:** document ci-python-uv.yml and the per-tier CI contract ([3fe3a99](https://github.com/wbendinelli/.github/commit/3fe3a99e608f1a4bce689d1882b59fb8fa19474b))
+
 ## [0.2.2](https://github.com/wbendinelli/.github/compare/v0.2.1...v0.2.2) (2026-06-04)
 
 
