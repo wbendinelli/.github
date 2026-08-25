@@ -1,0 +1,79 @@
+name: CI · Python uv (reusable)
+
+# Reusable CI enxuto pra repos Python 100% uv (workspace ou pacote único).
+# Generalizado do CI de referência do sapians-engram (uv workspace +
+# dependency-groups) — o `ci-python.yml` desta casa é pip+extras (com
+# `use-uv` como modo alternativo) e não encaixa bem em workspace uv; este
+# reusable assume uv como único gerenciador, sem o caminho pip.
+#
+# Gates (sem ratchet — repos uv da SAPIANS nascem com CI limpo; se precisar
+# do report→block do mypy/pytest, usar `ci-python.yml`):
+#   - ruff check         = bloqueante quando `run-lint`.
+#   - ruff format --check = bloqueante quando `run-lint`.
+#   - pytest              = bloqueante quando `run-tests`.
+#
+# `extra-install-args` cobre variações do `uv sync` (ex: `--all-packages`
+# pra workspace, `--all-extras` etc.) sem precisar editar o reusable.
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: "Versão do Python"
+        type: string
+        default: "3.12"
+      run-lint:
+        description: "Rodar ruff check + ruff format --check"
+        type: boolean
+        default: true
+      run-tests:
+        description: "Rodar pytest"
+        type: boolean
+        default: true
+      working-directory:
+        description: "Diretório do projeto (monorepo/workspace root por padrão)"
+        type: string
+        default: "."
+      extra-install-args:
+        description: "Args extras pro 'uv sync' (ex: '--all-packages')"
+        type: string
+        default: ""
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  quality:
+    name: Lint + Test (uv)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ inputs.python-version }}
+          enable-cache: true
+
+      - name: Install (uv sync)
+        run: uv sync ${{ inputs.extra-install-args }}
+
+      - name: Lint (ruff check) — bloqueante
+        if: ${{ inputs.run-lint }}
+        run: uv run ruff check .
+
+      - name: Format check (ruff format) — bloqueante
+        if: ${{ inputs.run-lint }}
+        run: uv run ruff format --check .
+
+      - name: Test (pytest)
+        if: ${{ inputs.run-tests }}
+        run: uv run pytest
