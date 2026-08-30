@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "note": "Fonte canônica do regex de marca. Derivado de sapians-docs/packages/docs-pipeline/src/validate.ts (BRAND_BAD_FORM), que é a versão testada contra corpus real. Consumidores: scripts/doclint.mjs, scripts/brand-lint.mjs, e uma cópia vendorizada em docs-pipeline com teste de drift.",
+  "rules": [
+    {
+      "id": "BR001",
+      "pattern": "(?<![a-zA-Z0-9_/\\-@.])Sapians(?![a-zA-Z0-9_/\\-])",
+      "flags": "g",
+      "message": "SAPIANS é sempre caixa-alta em prosa",
+      "fix": "SAPIANS"
+    }
+  ],
+  "denyPaths": ["/reports/eval/", "CHANGELOG", "STYLE.md", "validate.ts", "brand-lint.mjs", "doclint.mjs", "brand.json"]
+}
