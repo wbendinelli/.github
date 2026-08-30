@@ -1,0 +1,1 @@
+# repositório sem package.json

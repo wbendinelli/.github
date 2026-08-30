@@ -1,0 +1,63 @@
+name: Overrides check
+
+# Gate · as travas de `pnpm.overrides` do repositório chamador ainda estão EM
+# EFEITO?
+#
+# POR QUE EXISTE
+#   Vulnerabilidade transitiva que não tem correção na dependência direta é
+#   contida por override. Isso funciona — e falha em silêncio. O pnpm 10 parou
+#   de ler o campo `pnpm` do package.json: subir o `packageManager` derruba
+#   todas as travas de uma vez, com install verde e build passando.
+#
+#   Medido no sapians-xreset: sem os overrides, postcss volta de 8.5.25 para
+#   8.4.31, tar de 7.5.22 para 7.4.3 e sharp de 0.35.0 para 0.34.5 — as três
+#   versões vulneráveis, sem nenhum sinal.
+#
+# O QUE VERIFICA
+#   O EFEITO, e não a versão do pnpm: toda versão resolvida no pnpm-lock.yaml
+#   de um pacote com override tem de satisfazer alguma faixa declarada para ele.
+#   Assim o gate pega também as causas não previstas — chave renomeada, erro de
+#   digitação, override sobrescrito por outro workspace.
+#
+#   Repositório sem package.json, sem lock ou sem overrides PULA com aviso e sai
+#   0. Gate que quebra onde não se aplica ensina todo mundo a ignorá-lo.
+
+on:
+  workflow_call:
+    inputs:
+      path:
+        description: "Diretório do repositório a verificar"
+        type: string
+        default: "."
+      config-ref:
+        description: "Ref (tag ou SHA) de wbendinelli/.github de onde vem o gate. Obrigatorio."
+        type: string
+        # Mesma disciplina do brand-lint e do docs-lint: sem default. Default
+        # "main" faria a REGRA flutuar no HEAD enquanto o `uses:` vem da tag.
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  overrides:
+    name: overrides em efeito
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout do repositório verificado
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Checkout do gate
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: wbendinelli/.github
+          ref: ${{ inputs.config-ref }}
+          path: .overrides-bin
+
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 22
+
+      - name: Verificar
+        run: node .overrides-bin/scripts/check-overrides.mjs "${{ inputs.path }}"

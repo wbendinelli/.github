@@ -1,0 +1,10 @@
+lockfileVersion: '9.0'
+packages:
+  postcss@8.5.26:
+    resolution: {integrity: sha512-x}
+  sharp@0.35.4:
+    resolution: {integrity: sha512-x}
+  brace-expansion@2.1.4:
+    resolution: {integrity: sha512-x}
+  brace-expansion@5.0.9:
+    resolution: {integrity: sha512-x}

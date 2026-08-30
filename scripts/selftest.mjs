@@ -91,5 +91,27 @@ for (const cls of CFG.classes) {
   rmSync(base, { recursive: true, force: true })
 }
 
+// ── travas de override ───────────────────────────────────────────────────────
+// O gate check-overrides existe porque a falha dele é SILENCIOSA: o pnpm 10
+// parou de ler `pnpm.overrides` do package.json, e nesse cenário o campo
+// continua lá — só o efeito some. Por isso a asserção que importa é a do
+// fixture "violado": campo presente, lock degradado, gate tem de reprovar.
+console.log('\nselftest · travas de override (check-overrides)')
+
+const ovr = (dir) => run('check-overrides.mjs', [join(ROOT, 'test', 'fixtures', 'overrides', dir)])
+
+const ok = ovr('ok')
+const violado = ovr('violado')
+const semPkg = ovr('sem-pkg')
+
+check('lock conforme → passa', ok.code === 0, ok.out.trim().split('\n').pop())
+check('lock degradado com o campo presente → REPROVA', violado.code === 1,
+  'o cenário do pnpm 10 passaria despercebido')
+check('acusa os pacotes certos', /postcss@8\.4\.31/.test(violado.out) && /sharp@0\.34\.5/.test(violado.out),
+  violado.out.split('\n').filter(l => /não satisfaz/.test(l)).join(' | '))
+check('faixa escopada ao pai não gera falso positivo', !/brace-expansion/.test(
+  violado.out.split('deixaram de valer')[1] || ''), 'brace-expansion tem duas faixas legítimas')
+check('repositório sem package.json → pula, não quebra', semPkg.code === 0, semPkg.out.trim())
+
 if (fails.length) { console.error(`\n${fails.length} asserção(ões) falharam.`); process.exit(1) }
 console.log('\nTodas as asserções passaram.')
