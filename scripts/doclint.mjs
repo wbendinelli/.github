@@ -233,11 +233,19 @@ function walk (dir, acc = []) {
 function checkBrand (root) {
   const rule = BRAND.rules[0]
   const re = new RegExp(rule.pattern, rule.flags)
+  // O marcador vem do brand.json, não daqui: o brand-lint aplica a MESMA regra e
+  // precisa da MESMA exceção. Enquanto ele vivia hardcoded só lá, um ADR que cita
+  // a grafia errada como evidência passava num gate e falhava no outro.
+  const IGNORE = BRAND.ignoreMarker
   for (const file of walk(root)) {
     const rel = file.slice(root.length + 1)
     if (BRAND.denyPaths.some(d => rel.includes(d))) continue
     const lines = readFileSync(file, 'utf8').split(/\r?\n/)
-    lines.forEach((l, i) => { re.lastIndex = 0; if (re.test(l)) add('BR001', rel, i + 1, rule.message) })
+    lines.forEach((l, i) => {
+      if (IGNORE && (l.includes(IGNORE) || (i > 0 && lines[i - 1].includes(IGNORE)))) return
+      re.lastIndex = 0
+      if (re.test(l)) add('BR001', rel, i + 1, `${rule.message} (para citar de propósito, marque a linha com \`${IGNORE}\`)`)
+    })
   }
 }
 

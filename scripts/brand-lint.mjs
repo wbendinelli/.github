@@ -17,7 +17,7 @@ const argv = process.argv.slice(2);
 const FIX = argv.includes("--fix");
 const ALL = argv.includes("--all");
 const roots = argv.filter((a) => !a.startsWith("-"));
-const IGNORE = "brand-lint-ignore";
+const IGNORE = RULES.ignoreMarker; // definição única: doclint/rules/brand.json
 
 const SKIP_DIR = new Set(["node_modules", ".git", "dist", "build", ".next", "coverage", ".turbo", ".vercel", "__pycache__", ".claude"]);
 const EXT = ALL

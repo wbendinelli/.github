@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "note": "Fonte canônica do regex de marca. Derivado de sapians-docs/packages/docs-pipeline/src/validate.ts (BRAND_BAD_FORM), que é a versão testada contra corpus real. Consumidores: scripts/doclint.mjs, scripts/brand-lint.mjs, e uma cópia vendorizada em docs-pipeline com teste de drift.",
+  "note": "Fonte canônica do regex de marca E do marcador de exceção. Derivado de sapians-docs/packages/docs-pipeline/src/validate.ts (BRAND_BAD_FORM), que é a versão testada contra corpus real. Consumidores: scripts/doclint.mjs, scripts/brand-lint.mjs, e uma cópia vendorizada em docs-pipeline com teste de drift. O marcador vive AQUI, e não em cada script, porque as duas ferramentas aplicam a mesma regra: quando só uma honrava a exceção, um ADR que cita a grafia errada como evidência passava num gate e falhava no outro.",
   "rules": [
     {
       "id": "BR001",
@@ -10,5 +10,14 @@
       "fix": "SAPIANS"
     }
   ],
-  "denyPaths": ["/reports/eval/", "CHANGELOG", "STYLE.md", "validate.ts", "brand-lint.mjs", "doclint.mjs", "brand.json"]
+  "denyPaths": [
+    "/reports/eval/",
+    "CHANGELOG",
+    "STYLE.md",
+    "validate.ts",
+    "brand-lint.mjs",
+    "doclint.mjs",
+    "brand.json"
+  ],
+  "ignoreMarker": "brand-lint-ignore"
 }
