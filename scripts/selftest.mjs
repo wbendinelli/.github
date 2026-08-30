@@ -11,7 +11,7 @@
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
-import { cpSync, mkdtempSync, rmSync } from 'node:fs'
+import { cpSync, mkdtempSync, mkdirSync, rmSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -60,6 +60,36 @@ check('brand-lint acusa a violação NÃO marcada', brandNua)
 check('brand-lint ignora a violação MARCADA', !brandMarcada)
 check('as DUAS ferramentas concordam', docNua === brandNua && docMarcada === brandMarcada,
   `doclint(nua=${docNua},marcada=${docMarcada}) × brand-lint(nua=${brandNua},marcada=${brandMarcada})`)
+
+// ── gerador × gate ───────────────────────────────────────────────────────────
+// A asserção mais importante do repositório: o que `new-repo.mjs` gera tem de
+// passar em `doclint.mjs` LIMPO, para toda class do config. Sem isto, template
+// e regra derivam em silêncio e o onboarding passa a entregar repositório que
+// o próprio gate reprova — que é a definição de padrão quebrado.
+console.log('\nselftest · gerador × gate (toda class de doclint/config.json)')
+
+const CFG = JSON.parse(readFileSync(join(ROOT, 'doclint', 'config.json'), 'utf8'))
+const tierDe = cls => (CFG.matrix
+  ? Object.entries(CFG.matrix).find(([, m]) => (m.allow || []).includes(cls))?.[0]
+  : null) || CFG.tiers[0]
+
+for (const cls of CFG.classes) {
+  const tier = tierDe(cls)
+  // O diretório precisa ter o NOME do repositório: a regra RM002 compara o H1
+  // com o basename, e é assim que um clone real se parece. Gerar em diretório
+  // de nome aleatório faria o teste acusar um defeito que não existe.
+  const base = mkdtempSync(join(tmpdir(), 'sapians-gen-'))
+  const nome = `sapians-${cls.toLowerCase()}-fixture`
+  const dir = join(base, nome)
+  mkdirSync(dir, { recursive: true })
+  const g = run('new-repo.mjs', [dir, '--class', cls, '--tier', tier, '--name', nome, '--owner', 'sapians-hq'])
+  writeFileSync(join(dir, 'LICENSE'), 'fixture\n')  // LICENSE é decisão humana; o gerador não cria
+  const d = run('doclint.mjs', [dir, '--config', join(ROOT, 'doclint', 'config.json')])
+  const limpo = /0 erro\(s\) · 0 aviso\(s\)/.test(d.out)
+  check(`gerador → gate limpo · class=${cls} tier=${tier}`, g.code === 0 && limpo,
+    g.code !== 0 ? 'o gerador falhou' : d.out.split('\n').filter(l => /[✖⚠]/.test(l)).join(' | '))
+  rmSync(base, { recursive: true, force: true })
+}
 
 if (fails.length) { console.error(`\n${fails.length} asserção(ões) falharam.`); process.exit(1) }
 console.log('\nTodas as asserções passaram.')

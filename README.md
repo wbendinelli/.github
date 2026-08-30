@@ -11,7 +11,7 @@
 Config **central de engenharia** dos repos `sapians-*`. Hospeda os **reusable workflows** (`workflow_call`) que cada repo chama em ~12 linhas, os **community health files** herdados, os **templates** e a ferramenta de **brand-lint**. Fonte única de CI/CD: um bump de versão de action aqui propaga a todos os repos.
 
 - **Aqui = como USAR** o golden path (workflows, inputs, onboarding).
-- **Por quê / o padrão** = handbook em [`sapians-platform/handbook/golden-path.md`](https://github.com/wbendinelli/sapians-platform/blob/main/handbook/golden-path.md).
+- **Por quê / o padrão** = handbook em [`sapians-platform/handbook/golden-path.md`](https://github.com/sapians-hq/sapians-platform/blob/main/handbook/golden-path.md).
 - Manutenção dos workflows: [`docs/maintaining-workflows.md`](./docs/maintaining-workflows.md) · Troubleshooting: [`docs/troubleshooting.md`](./docs/troubleshooting.md).
 
 ## Como funciona (golden path)
@@ -59,7 +59,7 @@ Política de gate: **bloqueiam sempre** lint/typecheck/build/test/validate/secre
 ```yaml
 jobs:
   ci:
-    uses: wbendinelli/.github/.github/workflows/ci-node.yml@v0.4.1
+    uses: wbendinelli/.github/.github/workflows/ci-node.yml@v0.5.0
     permissions: { contents: read, packages: read }
     with: { node-version: "22", pnpm-version: "9.15.9", run-build: true }
     secrets: inherit
@@ -89,12 +89,12 @@ jobs:
 | `working-directory` | string | `"."` | Root do projeto/workspace |
 | `extra-install-args` | string | `""` | Args extras pro `uv sync` (ex: `--all-packages`) |
 
-Sem ratchet — os gates nascem bloqueantes (repos uv da SAPIANS partem de CI limpo). Generalizado do CI do [`sapians-engram`](https://github.com/wbendinelli/sapians-engram). Diferença pro `ci-python.yml`: aqui uv é o **único** gerenciador (sem caminho pip); usar `ci-python.yml` (`use-uv: true`) quando precisar do ratchet mypy/pytest.
+Sem ratchet — os gates nascem bloqueantes (repos uv da SAPIANS partem de CI limpo). Generalizado do CI do [`sapians-engram`](https://github.com/sapians-labs/sapians-engram). Diferença pro `ci-python.yml`: aqui uv é o **único** gerenciador (sem caminho pip); usar `ci-python.yml` (`use-uv: true`) quando precisar do ratchet mypy/pytest.
 
 ```yaml
 jobs:
   ci:
-    uses: wbendinelli/.github/.github/workflows/ci-python-uv.yml@v0.4.1
+    uses: wbendinelli/.github/.github/workflows/ci-python-uv.yml@v0.5.0
     permissions: { contents: read }
     with: { python-version: "3.12", extra-install-args: "--all-packages" }
 ```
@@ -128,15 +128,41 @@ Roda o binário gitleaks direto (sem a action — least-privilege, sem API). Bas
 
 ## Onboarding — adicionar um repo novo ao golden path
 
-1. **Pinar toolchain:** `.nvmrc` (22) / `.python-version` (3.12) / `packageManager` (pnpm@9.15.9).
-2. **Criar o caller** `.github/workflows/ci.yml` chamando o reusable do tier (exemplos acima). Caller mantém a própria política de trigger (push/PR, paths-ignore, concurrency).
-3. **Security + brand:** adicionar `security.yml` e `brand-lint.yml` callers.
-4. **Releases:** copiar `release-please.yml` caller + `release-please-config.json` + `.release-please-manifest.json` (ajustar `release-type`: node/python/simple/terraform-module + `package-name`).
-5. **Dependabot:** copiar [`templates/dependabot.yml`](./templates/dependabot.yml) pra `.github/dependabot.yml`.
-6. **README:** partir de [`templates/README.template.md`](./templates/README.template.md).
-7. **Branch protection** em `main`: exigir o check `ci`, `strict:false`, `enforce_admins:false`. Habilitar `can_approve_pull_request_reviews` (Settings → Actions) senão release-please falha.
+**Rode o gerador.** Ele produz o esqueleto conforme e é verificado por CI: o
+`selftest` prova, a cada PR, que o que ele gera passa no `doclint` limpo em
+**todas as nove classes**. Uma lista de passos em prosa não tem como provar isso
+— e foi por não ter que esta seção passou semanas sem mencionar
+`.sapians-repo.yml` nem o gate de documentação, que já eram obrigatórios.
 
-Detalhe do padrão e dos tiers: handbook (link acima).
+```bash
+node scripts/new-repo.mjs <diretorio> --class <Classe> --tier <Tier> \
+  --name <nome-do-repo> --owner <org>
+```
+
+Gera: `.sapians-repo.yml` · `README.md` (do template do perfil, com o H1, os
+badges e a linha de identidade já preenchidos) · `.github/workflows/docs-lint.yml`
+(pinado na versão corrente, lida de `version.txt`) · `.github/dependabot.yml`.
+
+O gerador **não** decide por você, e diz isso ao terminar:
+
+| Fica com você | Por quê |
+|---|---|
+| `LICENSE` | varia por organização e por o repositório ser público |
+| `release-please` | depende do `release-type` da linguagem (`node`·`python`·`simple`·`terraform-module`) |
+| CI da linguagem | escolher o reusable do tier (exemplos abaixo) |
+| `description` e `topics` no GitHub | é a vitrine da organização, não um arquivo |
+
+Depois, na ordem:
+
+1. **Pinar toolchain:** `.nvmrc` (22) / `.python-version` (3.12) / `packageManager` (pnpm@9.15.9).
+2. **Caller de CI:** `.github/workflows/ci.yml` chamando o reusable do tier. O caller mantém a própria política de trigger (push/PR, `paths-ignore`, `concurrency`).
+3. **Security + brand:** callers de `security.yml` e `brand-lint.yml`.
+4. **Releases:** caller de `release-please.yml` + `release-please-config.json` + `.release-please-manifest.json`. **Não escreva `separate-pull-requests`** — o default (`true`) é o correto para repositório de pacote único, e escrever `false` faz o release ser descartado em silêncio (ver [`docs/troubleshooting.md`](./docs/troubleshooting.md)).
+5. **Verificar antes da primeira PR:** `node scripts/doclint.mjs <diretorio>` tem de sair limpo.
+
+> **Branch protection** em `main` exige plano pago quando o repositório é privado.
+> Nas três organizações SAPIANS, hoje no plano Free, ela **não está ativa** — o gate
+> de PR é a única defesa, e por isso ele não pode ser contornado com commit direto.
 
 ## Contrato de CI por tier
 
@@ -148,15 +174,18 @@ O tier declarado em `.sapians-repo.yml` implica um contrato mínimo de *triggers
 | **I/C** (IaC·Content — interno, sem runtime servindo usuário) | PR-only ou dispatch-only, sem cron | `pull_request` (+ `workflow_dispatch` se precisar rodar manual) |
 | **D** (Config·Docs) | Mínimo — security + brand bastam | `pull_request`, `push: [main]` |
 
-Referências: [`sapians-engram`](https://github.com/wbendinelli/sapians-engram) (Python/uv — PR sempre roda `quality`; push filtra por `paths-ignore`) · `sapians-xreset` `gate.yml` (lanes classificadas pelo diff — job `changes` decide o que roda pesado) · [`scc5819/interpretable-ml-lectures`](https://github.com/scc5819/interpretable-ml-lectures) `canary.yml` (cron semanal non-blocking, badge próprio, não afeta o gate de PR).
+Referências: [`sapians-engram`](https://github.com/sapians-labs/sapians-engram) (Python/uv — PR sempre roda `quality`; push filtra por `paths-ignore`) · `sapians-xreset` `gate.yml` (lanes classificadas pelo diff — job `changes` decide o que roda pesado) · [`scc5819/interpretable-ml-lectures`](https://github.com/scc5819/interpretable-ml-lectures) `canary.yml` (cron semanal non-blocking, badge próprio, não afeta o gate de PR).
 
-### Templates de caller (pinados em `@v0.4.1`)
+### Templates de caller
+
+> A tag corrente é a de `version.txt`. Os exemplos abaixo usam `@v0.5.0`; o
+> gerador não copia daqui, lê o `version.txt` — texto de exemplo envelhece, arquivo não.
 
 ```yaml
 # Node (pnpm + Biome)
 jobs:
   ci:
-    uses: wbendinelli/.github/.github/workflows/ci-node.yml@v0.4.1
+    uses: wbendinelli/.github/.github/workflows/ci-node.yml@v0.5.0
     permissions: { contents: read, packages: read }
     with: { node-version: "22", pnpm-version: "9.15.9" }
     secrets: inherit
@@ -164,35 +193,57 @@ jobs:
 # Python — pip (ratchet mypy/pytest)
 jobs:
   ci:
-    uses: wbendinelli/.github/.github/workflows/ci-python.yml@v0.4.1
+    uses: wbendinelli/.github/.github/workflows/ci-python.yml@v0.5.0
     permissions: { contents: read }
     with: { python-version: "3.12", install-target: ".[dev]" }
 
 # Python — uv (workspace/lockfile, sem ratchet)
 jobs:
   ci:
-    uses: wbendinelli/.github/.github/workflows/ci-python-uv.yml@v0.4.1
+    uses: wbendinelli/.github/.github/workflows/ci-python-uv.yml@v0.5.0
     permissions: { contents: read }
     with: { python-version: "3.12", extra-install-args: "--all-packages" }
 
 # Terraform
 jobs:
   ci:
-    uses: wbendinelli/.github/.github/workflows/ci-terraform.yml@v0.4.1
+    uses: wbendinelli/.github/.github/workflows/ci-terraform.yml@v0.5.0
     permissions: { contents: read }
     with: { working-directory: "environments/prod", strict: false }
 ```
 
-> **Pinar tag é obrigatório**, nunca `@main` — um bump em `main` chegaria a toda a frota sem aviso. O Dependabot mantém o pin atualizado sozinho (ecossistema `github-actions`, semanal, já configurado em todos). Estado hoje: 10 repos em `@v0.4.1`; `sapians-xreset` pina por SHA, escolha mais estrita e deliberada.
+> **Pinar tag é obrigatório**, nunca `@main` — um bump em `main` chegaria a toda a
+> frota sem aviso. O Dependabot mantém o pin (ecossistema `github-actions`, semanal,
+> configurado em todos). Estado verificado em 2026-08-30: **os 15 repositórios das
+> três organizações pinam `@v0.5.0`**, com `config-ref: v0.4.1` no `docs-lint`
+> (equivalente — `doclint.mjs` e `config.json` são idênticos nas duas tags).
+>
+> Atenção ao nome: **`config-ref` governa a ferramenta inteira**, não só as regras.
+> O reusable faz checkout deste repositório nessa ref e executa o `doclint.mjs` de
+> lá. Bump de ferramenta exige bump de `config-ref`, não só do `uses:`.
 
 ### Auditoria mensal
 
 Loop de 3 comandos pra achar CI drift na fleet (trigger duplicado, workflow morto, repo fora do golden path):
 
 ```bash
-gh repo list wbendinelli --limit 300 --json name,pushedAt,isArchived
-gh api repos/wbendinelli/<repo>/contents/.github/workflows
-gh api repos/wbendinelli/<repo>/contents/.github/workflows/<wf>.yml -q .content | base64 -d | grep -n cron
+for o in sapians-hq sapians-labs sapians-research; do
+  gh repo list "$o" --limit 50 --json name,pushedAt,isArchived
+done
+gh api repos/<org>/<repo>/contents/.github/workflows
+gh api repos/<org>/<repo>/contents/.github/workflows/<wf>.yml -q .content | base64 -d | grep -n cron
+```
+
+Deriva de pin numa linha, nas três organizações:
+
+```bash
+for o in sapians-hq sapians-labs sapians-research; do
+  for r in $(gh repo list "$o" --limit 50 --json name -q '.[].name'); do
+    gh api "repos/$o/$r/contents/.github/workflows/docs-lint.yml" -q .content 2>/dev/null \
+      | base64 -d | grep -oE 'docs-lint\.yml@[^ ]+|config-ref: .*' | tr '\n' ' ' \
+      | sed "s|^|$o/$r  |"; echo
+  done
+done
 ```
 
 ## Versionamento
@@ -201,15 +252,15 @@ Este repositório usa release-please e publica tags semver. Consumidores **devem
 pinar em tag**, nunca em `@main`:
 
 ```yaml
-uses: wbendinelli/.github/.github/workflows/ci-node.yml@v0.4.1
+uses: wbendinelli/.github/.github/workflows/ci-node.yml@v0.5.0
 ```
 
 Um bump aqui propaga para todos os callers em `@main` sem aviso — o que é
 exatamente o modo de falha que o pin evita. A tag é o contrato; `main` é
 trabalho em andamento.
 
-Estado atual dos consumidores (deriva conhecida, a corrigir): `sapians-api`
-em `@v0.4.1`, `sapians-docs` em `@main`, `sapians-xreset` pinado por SHA.
+Estado atual dos consumidores (verificado em 2026-08-30): os 15 repositórios das
+três organizações estão em `@v0.5.0`. Não há deriva conhecida.
 
 Breaking change em reusable = major, e os callers migram um a um. O
 `config-ref` do `docs-lint.yml` segue a mesma regra.
@@ -226,16 +277,21 @@ Breaking change em reusable = major, e os callers migram um a um. O
 ## Estrutura
 - `.github/workflows/` — reusables + lint/release próprios.
 - `.github/ISSUE_TEMPLATE/` — templates de issue.
+- `scripts/doclint.mjs` — gate de documentação (README por perfil, schema do `.sapians-repo.yml`, marca).
 - `scripts/brand-lint.mjs` — linter/fixer de marca (`--fix`, `--all`).
-- `templates/` — README skeleton + dependabot.
+- `scripts/new-repo.mjs` — gerador do esqueleto conforme.
+- `scripts/selftest.mjs` — teste de comportamento das ferramentas; roda no `docs-lint-self.yml`.
+- `doclint/config.json` · `doclint/rules/brand.json` — as regras. Fonte única: o gerador, o doclint e o brand-lint leem daqui.
+- `test/fixtures/` — fixtures do selftest. Estão no `denyPaths` da marca: as violações ali são deliberadas.
+- `templates/` — 5 skeletons de README (um por perfil) + dependabot.
 - `docs/` — runbooks de manutenção.
 - [`MAINTAINERS.md`](./MAINTAINERS.md) · [`CONTRIBUTING.md`](./CONTRIBUTING.md) · [`SECURITY.md`](./SECURITY.md).
 
 ## Links
 
-- Handbook do padrão: [`sapians-platform/handbook/golden-path.md`](https://github.com/wbendinelli/sapians-platform/blob/main/handbook/golden-path.md)
-- ADR-0015 — padrão de documentação: [`adr/0015`](https://github.com/wbendinelli/sapians-platform/blob/main/adr/0015-documentation-standard-single-source.md)
-- ADR-0016 — topologia de organizações: [`adr/0016`](https://github.com/wbendinelli/sapians-platform/blob/main/adr/0016-github-organization-topology.md)
+- Handbook do padrão: [`sapians-platform/handbook/golden-path.md`](https://github.com/sapians-hq/sapians-platform/blob/main/handbook/golden-path.md)
+- ADR-0015 — padrão de documentação: [`adr/0015`](https://github.com/sapians-hq/sapians-platform/blob/main/adr/0015-documentation-standard-single-source.md)
+- ADR-0016 — topologia de organizações: [`adr/0016`](https://github.com/sapians-hq/sapians-platform/blob/main/adr/0016-github-organization-topology.md)
 - Manutenção dos workflows: [`docs/maintaining-workflows.md`](./docs/maintaining-workflows.md)
 - Troubleshooting: [`docs/troubleshooting.md`](./docs/troubleshooting.md)
 
