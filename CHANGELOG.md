@@ -1,5 +1,40 @@
 # Changelog
 
+## [0.4.0](https://github.com/wbendinelli/.github/compare/v0.3.0...v0.4.0) (2026-08-30)
+
+
+### Features
+
+* **ci:** add reusable docs-lint workflow ([4b28d84](https://github.com/wbendinelli/.github/commit/4b28d84ed2ca99a79785c69898e8851b85dfe6d3))
+* **doclint:** add documentation gate with per-repo baseline (ADR-0015) ([f815617](https://github.com/wbendinelli/.github/commit/f815617ac34aaa48729af4c737260d89dd77eda0))
+* **doclint:** add profiles, tier matrix and severities ([2636787](https://github.com/wbendinelli/.github/commit/26367870f30ebe847792cfac80bd2ff9ee4426b8))
+* **doclint:** canonical brand rule, single source for the three copies ([aba5943](https://github.com/wbendinelli/.github/commit/aba59438a9b66890b48e51f9692a919d090fc5de))
+* **doclint:** match sections by canonical prefix, widen aliases from real fleet usage ([906088d](https://github.com/wbendinelli/.github/commit/906088dd5cf4b4861b48a5c414c67bde37a72dda))
+* **doclint:** match sections by canonical prefix, widen aliases from real fleet usage ([fc0f14f](https://github.com/wbendinelli/.github/commit/fc0f14f0a2c80309a360a5e65b013da58dc6c601))
+
+
+### Bug Fixes
+
+* **ci:** checkout the config repo instead of relying on job_workflow_sha ([400621f](https://github.com/wbendinelli/.github/commit/400621fe6ce276a9d2118fc5939bebfcad34ffc7))
+* **doclint:** read section bodies from the original text ([93a6939](https://github.com/wbendinelli/.github/commit/93a6939dda45a8299646fe033e124173a5bad4df))
+* **doclint:** realign profiles to the Google docguide baseline ([c516e13](https://github.com/wbendinelli/.github/commit/c516e1344ef5f502051d294463180d6323db112e))
+* **release:** remove package-name que impedia o tagging pós-merge ([44ae6f6](https://github.com/wbendinelli/.github/commit/44ae6f6982ac9a09a47c274941b7992f95d3d38c))
+
+
+### Documentation
+
+* conform README to the config profile (ADR-0015) ([6c4bb44](https://github.com/wbendinelli/.github/commit/6c4bb44c6ed3f0355843a5ac587479e713cf53cd))
+* **templates:** add client.template.md profile (ADR-0015) ([a329267](https://github.com/wbendinelli/.github/commit/a329267c78fe7dea1736922f00ec426e04fb5807))
+* **templates:** add config.template.md profile (ADR-0015) ([ba00c79](https://github.com/wbendinelli/.github/commit/ba00c79377e8aa9350bfcf524b751cff16553991))
+* **templates:** add content.template.md profile (ADR-0015) ([2f9e6a3](https://github.com/wbendinelli/.github/commit/2f9e6a33e03de7ad382d5ceb16680e02b0e8909b))
+* **templates:** add product.template.md profile (ADR-0015) ([8e94e12](https://github.com/wbendinelli/.github/commit/8e94e12aaf770ca3cf82e85a2ca838dfdf228c1a))
+* **templates:** add research.template.md profile (ADR-0015) ([8e5937b](https://github.com/wbendinelli/.github/commit/8e5937b11472b8066f1eb39d674341ac1b25e3ab))
+
+
+### Continuous Integration
+
+* run doclint against this repository itself ([761601f](https://github.com/wbendinelli/.github/commit/761601fb344160588320bc3bd154025fd43317da))
+
 ## [0.3.0](https://github.com/wbendinelli/.github/compare/v0.2.2...v0.3.0) (2026-08-25)
 
 
