@@ -11,10 +11,24 @@
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
+import { cpSync, mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(HERE, '..')
-const FIXTURE = join(ROOT, 'test', 'fixtures', 'marca')
+
+// O fixture roda numa CÓPIA FORA da árvore do repo, e não in loco, por dois
+// motivos que se somam:
+//  1. `test/fixtures/` está no denyPaths de brand.json — precisa estar, senão a
+//     violação deliberada de violacao-nua.md reprova o lint do próprio repo.
+//     Rodando in loco, o denyPaths esconderia o fixture do teste também, e as
+//     asserções passariam por ausência de achado em vez de por comportamento.
+//  2. É mais fiel: um repo consumidor tem o fixture na raiz do que é varrido,
+//     que é exatamente o que a cópia reproduz.
+const TMP = mkdtempSync(join(tmpdir(), 'sapians-selftest-'))
+process.on('exit', () => { try { rmSync(TMP, { recursive: true, force: true }) } catch {} })
+cpSync(join(ROOT, 'test', 'fixtures', 'marca'), TMP, { recursive: true })
+const FIXTURE = TMP
 
 const run = (script, args) => {
   try {

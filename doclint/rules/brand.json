@@ -17,7 +17,8 @@
     "validate.ts",
     "brand-lint.mjs",
     "doclint.mjs",
-    "brand.json"
+    "brand.json",
+    "test/fixtures/"
   ],
   "ignoreMarker": "brand-lint-ignore"
 }
