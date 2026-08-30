@@ -1,87 +1,389 @@
 {
   "schema": 1,
-  "classes": ["App","Service","Library","IaC","Content","Docs","Config","Research","ClientDelivery"],
-  "tiers": ["A","B","C","D","I"],
+  "classes": [
+    "App",
+    "Service",
+    "Library",
+    "IaC",
+    "Content",
+    "Docs",
+    "Config",
+    "Research",
+    "ClientDelivery"
+  ],
+  "tiers": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "I"
+  ],
   "matrix": {
-    "A": { "allow": ["App","Service"], "unusual": ["Library"] },
-    "B": { "allow": ["App","Service","Library","ClientDelivery"], "unusual": [] },
-    "C": { "allow": ["Library","Research","Content","Docs"], "unusual": [] },
-    "D": { "allow": ["Content","Docs","Config","ClientDelivery","Research"], "unusual": [] },
-    "I": { "allow": ["IaC","Docs","Config"], "unusual": ["Service","Library"] }
+    "A": {
+      "allow": [
+        "App",
+        "Service",
+        "Library"
+      ],
+      "unusual": [
+        "Docs",
+        "Content",
+        "Config"
+      ]
+    },
+    "B": {
+      "allow": [
+        "App",
+        "Service",
+        "Library",
+        "Content",
+        "Docs",
+        "ClientDelivery"
+      ],
+      "unusual": [
+        "IaC",
+        "Config"
+      ]
+    },
+    "C": {
+      "allow": [
+        "Library",
+        "Research",
+        "Content",
+        "Docs"
+      ],
+      "unusual": [
+        "App",
+        "Service"
+      ]
+    },
+    "D": {
+      "allow": [
+        "Content",
+        "Docs",
+        "Config",
+        "Library",
+        "App",
+        "Service",
+        "Research",
+        "ClientDelivery"
+      ],
+      "unusual": []
+    },
+    "I": {
+      "allow": [
+        "IaC",
+        "Docs",
+        "Config",
+        "Service",
+        "Library"
+      ],
+      "unusual": [
+        "App"
+      ]
+    }
   },
   "classProfile": {
-    "App": "product", "Service": "product", "Library": "product",
+    "App": "product",
+    "Service": "product",
+    "Library": "product",
     "Research": "research",
     "ClientDelivery": "client",
-    "Content": "content", "Docs": "content",
-    "IaC": "config", "Config": "config"
+    "Content": "content",
+    "Docs": "content",
+    "IaC": "config",
+    "Config": "config"
   },
   "profiles": {
     "product": {
       "language": "pt-BR",
       "sections": [
-        { "id": "what",   "canonical": "O que é", "aliases": ["o que é / por quê","o que faz","what & why","overview"] },
-        { "id": "quick",  "canonical": "Quickstart", "aliases": ["início rápido","getting started","install"] },
-        { "id": "scripts","canonical": "Scripts", "aliases": ["comandos"], "requiresTable": true },
-        { "id": "arch",   "canonical": "Arquitetura", "aliases": ["architecture","arquitetura em 1 minuto"] },
-        { "id": "status", "canonical": "Status", "aliases": ["estado atual"] },
-        { "id": "links",  "canonical": "Links", "aliases": ["quick links","referências"] }
+        {
+          "id": "what",
+          "canonical": "O que é",
+          "aliases": [
+            "o que é / por quê",
+            "o que faz",
+            "sobre",
+            "about",
+            "overview",
+            "what & why"
+          ]
+        },
+        {
+          "id": "quick",
+          "canonical": "Quickstart",
+          "aliases": [
+            "início rápido",
+            "inicio rapido",
+            "getting started",
+            "install",
+            "instalação"
+          ]
+        },
+        {
+          "id": "scripts",
+          "canonical": "Scripts",
+          "aliases": [
+            "comandos"
+          ],
+          "requiresTable": true
+        },
+        {
+          "id": "arch",
+          "canonical": "Arquitetura",
+          "aliases": [
+            "architecture",
+            "arquitetura em 1 minuto",
+            "estrutura do projeto"
+          ]
+        },
+        {
+          "id": "status",
+          "canonical": "Status",
+          "aliases": [
+            "estado atual"
+          ]
+        },
+        {
+          "id": "links",
+          "canonical": "Links",
+          "aliases": [
+            "quick links",
+            "referências",
+            "referencias"
+          ]
+        }
       ],
-      "badges": ["ci","release","license"],
-      "files": ["LICENSE"]
+      "badges": [
+        "ci",
+        "release",
+        "license"
+      ],
+      "files": []
     },
     "research": {
       "language": "en",
       "sections": [
-        { "id": "overview",  "canonical": "Overview", "aliases": ["about","o que é","model","theory in one paragraph"] },
-        { "id": "quick",     "canonical": "Quickstart", "aliases": ["install","getting started"] },
-        { "id": "repro",     "canonical": "Reproducing", "aliases": ["reproducibility","reproduction","repository map"] },
-        { "id": "citation",  "canonical": "Citation", "aliases": ["citing this work","how to cite","citing"], "requiresBibtex": true },
-        { "id": "license",   "canonical": "License", "aliases": ["license and disclaimer","licença · license","use and limits"] }
+        {
+          "id": "overview",
+          "canonical": "Overview",
+          "aliases": [
+            "about",
+            "o que é",
+            "model",
+            "theory in one paragraph",
+            "o que é / por quê"
+          ]
+        },
+        {
+          "id": "quick",
+          "canonical": "Quickstart",
+          "aliases": [
+            "install",
+            "getting started",
+            "canonical quick start"
+          ]
+        },
+        {
+          "id": "repro",
+          "canonical": "Reproducing",
+          "aliases": [
+            "reproducibility",
+            "reproduction",
+            "repository map",
+            "tests",
+            "mapa do repositório"
+          ]
+        },
+        {
+          "id": "citation",
+          "canonical": "Citation",
+          "aliases": [
+            "cite",
+            "citing this work",
+            "how to cite",
+            "citação"
+          ],
+          "requiresBibtex": true
+        },
+        {
+          "id": "license",
+          "canonical": "License",
+          "aliases": [
+            "license and disclaimer",
+            "licença",
+            "licença · license",
+            "license and citation status",
+            "scientific boundaries",
+            "dados, ética e limites"
+          ]
+        }
       ],
-      "badges": ["license", "oneOf:preprint,doi,package"],
-      "files": ["LICENSE"]
+      "badges": [
+        "license",
+        "oneOf:preprint,doi,package"
+      ],
+      "files": [
+        "LICENSE"
+      ]
     },
     "client": {
       "language": "pt-BR",
       "sections": [
-        { "id": "ficha",  "canonical": "Ficha do projeto", "aliases": ["ficha","projeto"], "requiresTable": true },
-        { "id": "what",   "canonical": "O que é", "aliases": ["o que é / por quê","escopo"] },
-        { "id": "status", "canonical": "Status", "aliases": ["estado atual"], "requiresIsoDate": true },
-        { "id": "links",  "canonical": "Links", "aliases": [] }
+        {
+          "id": "ficha",
+          "canonical": "Ficha do projeto",
+          "aliases": [
+            "ficha",
+            "projeto",
+            "escopo"
+          ],
+          "requiresTable": true
+        },
+        {
+          "id": "what",
+          "canonical": "O que é",
+          "aliases": [
+            "o que é / por quê",
+            "sobre"
+          ]
+        },
+        {
+          "id": "status",
+          "canonical": "Status",
+          "aliases": [
+            "estado atual"
+          ],
+          "requiresIsoDate": true
+        },
+        {
+          "id": "links",
+          "canonical": "Links",
+          "aliases": []
+        }
       ],
-      "badges": ["ci"],
-      "files": ["LICENSE"]
+      "badges": [
+        "ci"
+      ],
+      "files": []
     },
     "content": {
       "language": "pt-BR",
       "sections": [
-        { "id": "what",     "canonical": "O que é", "aliases": ["o que é / por quê","sobre"] },
-        { "id": "struct",   "canonical": "Estrutura", "aliases": ["structure","organização"] },
-        { "id": "publish",  "canonical": "Como publicar", "aliases": ["publicação","deploy"] },
-        { "id": "status",   "canonical": "Status", "aliases": ["estado atual"] },
-        { "id": "links",    "canonical": "Links", "aliases": [] }
+        {
+          "id": "what",
+          "canonical": "O que é",
+          "aliases": [
+            "o que é / por quê",
+            "o que faz",
+            "sobre",
+            "about",
+            "overview",
+            "what & why"
+          ]
+        },
+        {
+          "id": "struct",
+          "canonical": "Estrutura",
+          "aliases": [
+            "structure",
+            "organização",
+            "mapa do repositório",
+            "conteúdo"
+          ]
+        },
+        {
+          "id": "status",
+          "canonical": "Status",
+          "aliases": [
+            "estado atual"
+          ]
+        },
+        {
+          "id": "links",
+          "canonical": "Links",
+          "aliases": [
+            "quick links",
+            "referências",
+            "referencias"
+          ]
+        }
       ],
-      "badges": ["ci","license"],
-      "files": ["LICENSE"]
+      "badges": [
+        "ci",
+        "license"
+      ],
+      "files": [
+        "LICENSE"
+      ]
     },
     "config": {
       "language": "pt-BR",
       "sections": [
-        { "id": "what",    "canonical": "O que é", "aliases": ["o que é / por quê"] },
-        { "id": "consume", "canonical": "Como consumir", "aliases": ["uso","usage","como usar"] },
-        { "id": "version", "canonical": "Versionamento", "aliases": ["versioning","releases"] },
-        { "id": "links",   "canonical": "Links", "aliases": [] }
+        {
+          "id": "what",
+          "canonical": "O que é",
+          "aliases": [
+            "o que é / por quê",
+            "o que faz",
+            "sobre",
+            "about",
+            "overview",
+            "what & why"
+          ]
+        },
+        {
+          "id": "consume",
+          "canonical": "Como consumir",
+          "aliases": [
+            "uso",
+            "usage",
+            "como usar",
+            "quickstart"
+          ]
+        },
+        {
+          "id": "version",
+          "canonical": "Versionamento",
+          "aliases": [
+            "versioning",
+            "releases"
+          ]
+        },
+        {
+          "id": "links",
+          "canonical": "Links",
+          "aliases": [
+            "quick links",
+            "referências",
+            "referencias"
+          ]
+        }
       ],
-      "badges": ["ci"],
-      "files": ["LICENSE"]
+      "badges": [
+        "ci"
+      ],
+      "files": []
     }
   },
   "severities": {
-    "SR001": "warn", "SR010": "error", "SR020": "error", "SR021": "error",
-    "SR030": "error", "SR031": "warn", "SR050": "error", "SR060": "error",
-    "RM001": "error", "RM002": "warn", "RM010": "error",
-    "RM020": "error", "RM030": "error", "RM031": "error", "RM040": "warn", "RM050": "warn",
+    "SR001": "warn",
+    "SR010": "error",
+    "SR020": "error",
+    "SR021": "error",
+    "SR030": "error",
+    "SR031": "warn",
+    "SR050": "error",
+    "SR060": "error",
+    "RM001": "error",
+    "RM002": "warn",
+    "RM010": "error",
+    "RM020": "error",
+    "RM030": "error",
+    "RM031": "error",
+    "RM040": "warn",
+    "RM050": "warn",
     "RP001": "error",
     "XR010": "error",
     "BR001": "error"
