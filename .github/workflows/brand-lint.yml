@@ -14,9 +14,18 @@ on:
   workflow_call:
     inputs:
       config-ref:
-        description: "Ref de wbendinelli/.github de onde vem a regra. Pinar em tag."
+        description: "Ref (tag ou SHA) de wbendinelli/.github de onde vem a regra de marca. Obrigatorio."
         type: string
-        default: "main"
+        # OBRIGATORIO, e sem default. O default anterior era "main", e o
+        # reusable faz checkout DESTE repositorio na ref recebida para rodar o
+        # script e ler as regras: quem nao passava o input baixava ferramenta e
+        # regra do HEAD de main a cada run. O `uses:` vinha da tag; o criterio
+        # de aprovacao vinha do branch. Oito callers estavam nessa situacao.
+        #
+        # Exigir e melhor que eleger uma tag como default: default envelhece e
+        # vira a proxima mentira. Assim, esquecer quebra na hora, em vez de
+        # passar despercebido por meses.
+        required: true
 
 defaults:
   run:
