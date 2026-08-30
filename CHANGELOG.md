@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.5.0](https://github.com/wbendinelli/.github/compare/v0.4.1...v0.5.0) (2026-08-30)
+
+
+### Features
+
+* **brand-lint:** read the canonical rule and allow deliberate citations ([5b1e73e](https://github.com/wbendinelli/.github/commit/5b1e73e69edf9182c43330eb610dc46f0f96944e))
+
+
+### Documentation
+
+* correct the pinning examples and the false fleet state ([232c7fa](https://github.com/wbendinelli/.github/commit/232c7fa1fb1cb769fb405d71ee2af4b6c9b730bb))
+* state the real pinning policy — tag, not [@main](https://github.com/main) ([471a45e](https://github.com/wbendinelli/.github/commit/471a45e3f39e3487d0d75b26e33b18355b1c5142))
+
+
+### Code Refactoring
+
+* **ci:** run the canonical brand-lint script instead of an inline copy ([d1c4087](https://github.com/wbendinelli/.github/commit/d1c4087ff51f45f8365c8b427024ad2d9f0c873d))
+
 ## [0.4.1](https://github.com/wbendinelli/.github/compare/v0.4.0...v0.4.1) (2026-08-30)
 
 
