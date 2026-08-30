@@ -1,0 +1,4 @@
+# Fixture do selftest — não é um repo real.
+class: Docs
+tier: D
+description: fixture do selftest de marca

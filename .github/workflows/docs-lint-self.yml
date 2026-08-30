@@ -3,7 +3,7 @@ name: Docs lint (self)
 on:
   push:
     branches: [main]
-    paths: ["README.md", "scripts/doclint.mjs", "doclint/**", ".sapians-repo.yml"]
+    paths: ["README.md", "scripts/**", "doclint/**", "test/**", ".sapians-repo.yml"]
   pull_request:
   workflow_dispatch:
 
@@ -19,4 +19,11 @@ jobs:
       - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
           node-version: 22
-      - run: node scripts/doclint.mjs . --format github
+      - name: doclint no próprio repo (smoke)
+        run: node scripts/doclint.mjs . --format github
+
+      # Teste de COMPORTAMENTO das ferramentas, não do README deste repo.
+      # A asserção de concordância entre doclint e brand-lint é a que pega
+      # divergência de regra entre as duas — o defeito de 2026-08-30.
+      - name: selftest das ferramentas (marca · doclint × brand-lint)
+        run: node scripts/selftest.mjs
