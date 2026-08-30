@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.0](https://github.com/wbendinelli/.github/compare/v0.5.0...v0.6.0) (2026-08-30)
+
+
+### Features
+
+* **onboarding:** gerador de repositório conforme, e o README para de mentir ([#19](https://github.com/wbendinelli/.github/issues/19)) ([cd0d394](https://github.com/wbendinelli/.github/commit/cd0d394054dfde15400eb5c2978a912f68bb4fb0))
+
+
+### Bug Fixes
+
+* **brand:** uma definição do marcador de exceção, honrada pelas duas ferramentas ([#17](https://github.com/wbendinelli/.github/issues/17)) ([44e1c64](https://github.com/wbendinelli/.github/commit/44e1c640749162978c71e81a3daae8110eabc159))
+
 ## [0.5.0](https://github.com/wbendinelli/.github/compare/v0.4.1...v0.5.0) (2026-08-30)
 
 
