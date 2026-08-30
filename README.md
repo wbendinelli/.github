@@ -59,7 +59,7 @@ Política de gate: **bloqueiam sempre** lint/typecheck/build/test/validate/secre
 ```yaml
 jobs:
   ci:
-    uses: wbendinelli/.github/.github/workflows/ci-node.yml@main
+    uses: wbendinelli/.github/.github/workflows/ci-node.yml@v0.4.1
     permissions: { contents: read, packages: read }
     with: { node-version: "22", pnpm-version: "9.15.9", run-build: true }
     secrets: inherit
@@ -94,7 +94,7 @@ Sem ratchet — os gates nascem bloqueantes (repos uv da SAPIANS partem de CI li
 ```yaml
 jobs:
   ci:
-    uses: wbendinelli/.github/.github/workflows/ci-python-uv.yml@main
+    uses: wbendinelli/.github/.github/workflows/ci-python-uv.yml@v0.4.1
     permissions: { contents: read }
     with: { python-version: "3.12", extra-install-args: "--all-packages" }
 ```
@@ -150,13 +150,13 @@ O tier declarado em `.sapians-repo.yml` implica um contrato mínimo de *triggers
 
 Referências: [`sapians-engram`](https://github.com/wbendinelli/sapians-engram) (Python/uv — PR sempre roda `quality`; push filtra por `paths-ignore`) · `sapians-xreset` `gate.yml` (lanes classificadas pelo diff — job `changes` decide o que roda pesado) · [`scc5819/interpretable-ml-lectures`](https://github.com/scc5819/interpretable-ml-lectures) `canary.yml` (cron semanal non-blocking, badge próprio, não afeta o gate de PR).
 
-### Templates de caller (pinados em `@v0.3.0`)
+### Templates de caller (pinados em `@v0.4.1`)
 
 ```yaml
 # Node (pnpm + Biome)
 jobs:
   ci:
-    uses: wbendinelli/.github/.github/workflows/ci-node.yml@v0.3.0
+    uses: wbendinelli/.github/.github/workflows/ci-node.yml@v0.4.1
     permissions: { contents: read, packages: read }
     with: { node-version: "22", pnpm-version: "9.15.9" }
     secrets: inherit
@@ -164,26 +164,26 @@ jobs:
 # Python — pip (ratchet mypy/pytest)
 jobs:
   ci:
-    uses: wbendinelli/.github/.github/workflows/ci-python.yml@v0.3.0
+    uses: wbendinelli/.github/.github/workflows/ci-python.yml@v0.4.1
     permissions: { contents: read }
     with: { python-version: "3.12", install-target: ".[dev]" }
 
 # Python — uv (workspace/lockfile, sem ratchet)
 jobs:
   ci:
-    uses: wbendinelli/.github/.github/workflows/ci-python-uv.yml@v0.3.0
+    uses: wbendinelli/.github/.github/workflows/ci-python-uv.yml@v0.4.1
     permissions: { contents: read }
     with: { python-version: "3.12", extra-install-args: "--all-packages" }
 
 # Terraform
 jobs:
   ci:
-    uses: wbendinelli/.github/.github/workflows/ci-terraform.yml@v0.3.0
+    uses: wbendinelli/.github/.github/workflows/ci-terraform.yml@v0.4.1
     permissions: { contents: read }
     with: { working-directory: "environments/prod", strict: false }
 ```
 
-> O padrão do repo é `@main` (ver [`docs/maintaining-workflows.md`](./docs/maintaining-workflows.md#versionamento)); pinar em `@v0.3.0` é opcional, pra callers que querem upgrade deliberado (ex.: `sapians-engram`@`v0.2.2`, `sapians-xreset` pinado por SHA).
+> **Pinar tag é obrigatório**, nunca `@main` — um bump em `main` chegaria a toda a frota sem aviso. O Dependabot mantém o pin atualizado sozinho (ecossistema `github-actions`, semanal, já configurado em todos). Estado hoje: 10 repos em `@v0.4.1`; `sapians-xreset` pina por SHA, escolha mais estrita e deliberada.
 
 ### Auditoria mensal
 
@@ -201,7 +201,7 @@ Este repositório usa release-please e publica tags semver. Consumidores **devem
 pinar em tag**, nunca em `@main`:
 
 ```yaml
-uses: wbendinelli/.github/.github/workflows/ci-node.yml@v0.3.0
+uses: wbendinelli/.github/.github/workflows/ci-node.yml@v0.4.1
 ```
 
 Um bump aqui propaga para todos os callers em `@main` sem aviso — o que é
@@ -209,7 +209,7 @@ exatamente o modo de falha que o pin evita. A tag é o contrato; `main` é
 trabalho em andamento.
 
 Estado atual dos consumidores (deriva conhecida, a corrigir): `sapians-api`
-em `@v0.3.0`, `sapians-docs` em `@main`, `sapians-xreset` pinado por SHA.
+em `@v0.4.1`, `sapians-docs` em `@main`, `sapians-xreset` pinado por SHA.
 
 Breaking change em reusable = major, e os callers migram um a um. O
 `config-ref` do `docs-lint.yml` segue a mesma regra.
