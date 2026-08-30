@@ -248,6 +248,38 @@ done
 
 ## Versionamento
 
+### Quem versiona, e quem não
+
+Regra por perfil, alinhada ao charter de cada organização. Verificado em 2026-08-30.
+
+| Perfil / org | release-please | Por quê |
+|---|---|---|
+| `product` (App·Service·Library) em **sapians-hq** | **obrigatório** | é o que um cliente consome; a versão é contrato |
+| `content` · `config` em **sapians-hq** | **obrigatório** | `docs`, `corpus`, `infra` e `platform` são consumidos por outros repositórios |
+| **sapians-research** | **não** | versiona por EVENTO DE PUBLICAÇÃO, não por commit convencional |
+| **sapians-labs** | opcional | a org declara "no support"; automação de release sem consumidor é cerimônia |
+
+**Por que `research` fica de fora, explicitamente.** As tags de lá saem do padrão
+`vX.Y.Z` de propósito — `v2.1.0-preprint`, `v1.0.0-ssrn`, `v0.2-bilingual-paper-package`
+marcam versões de *publicação*, não de software. E o `publish.yml` do `dlvt` dispara
+em `release: published` porque subir ao PyPI é decisão do autor, com o paper pronto.
+Automatizar isso trocaria uma decisão editorial por um merge. **Não é deriva a
+corrigir; é convenção a preservar** — quem for "padronizar" essas tags no futuro
+está prestes a quebrar o fluxo do paper.
+
+**Estado de conformidade (2026-08-30).** Os 9 repositórios de produto/conteúdo de
+`sapians-hq` têm release-please. Duas correções abertas: o `sapians-privacy-policy`
+tinha config e manifesto **sem workflow** — aparência de automação, zero releases,
+manifesto parado em `0.0.0` — e o `sapians-landingpage`, único App da org sem
+versionamento, declarava `1.0.0` no `package.json` sem tag correspondente.
+
+**Armadilha que já custou três meses.** Nunca escreva `"separate-pull-requests"`
+em repositório de pacote único. O default (`true`) é o correto; escrever `false`
+faz a branch nascer sem sufixo de componente e o release ser **descartado em
+silêncio** — manifesto bumpa, nenhuma tag sai, run termina verde. Detalhe em
+[`docs/troubleshooting.md`](./docs/troubleshooting.md).
+
+
 Este repositório usa release-please e publica tags semver. Consumidores **devem
 pinar em tag**, nunca em `@main`:
 
