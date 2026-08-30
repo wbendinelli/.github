@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/wbendinelli/.github/compare/v0.7.0...v0.8.0) (2026-08-30)
+
+
+### Features
+
+* **gate:** guard central que prova que travas de override estão em efeito ([#22](https://github.com/wbendinelli/.github/issues/22)) ([201f0a1](https://github.com/wbendinelli/.github/commit/201f0a1831db3b40333973cdc6a6248d16314655))
+
 ## [0.7.0](https://github.com/wbendinelli/.github/compare/v0.6.0...v0.7.0) (2026-08-30)
 
 
