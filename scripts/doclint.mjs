@@ -86,12 +86,15 @@ function headingSegments (h) {
   return normalizeHeading(h).split(/\s*[·—|]\s*/).map(s => s.trim().toLowerCase()).filter(Boolean)
 }
 function parseMd (md) {
-  const clean = stripFences(md)
-  const lines = clean.split(/\r?\n/)
+  // Headings são detectados no texto SEM blocos de código (um `## ` dentro de
+  // exemplo não é seção). O corpo, porém, é lido do texto ORIGINAL — senão
+  // um BibTeX ou uma tabela dentro de ``` sumiria da verificação.
+  const scan = stripFences(md).split(/\r?\n/)
+  const lines = md.split(/\r?\n/)
   const headings = []
   let h1 = null
-  for (let i = 0; i < lines.length; i++) {
-    const m = lines[i].match(/^(#{1,6})\s+(.*)$/)
+  for (let i = 0; i < scan.length; i++) {
+    const m = scan[i].match(/^(#{1,6})\s+(.*)$/)
     if (!m) continue
     const level = m[1].length
     const entry = { level, raw: m[2], segs: headingSegments(m[2]), line: i + 1 }
