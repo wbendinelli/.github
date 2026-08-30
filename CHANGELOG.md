@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.7.0](https://github.com/wbendinelli/.github/compare/v0.6.0...v0.7.0) (2026-08-30)
+
+
+### ⚠ BREAKING CHANGES
+
+* **reusable:** callers de brand-lint.yml e docs-lint.yml precisam passar config-ref. Todos os callers atuais já passam.
+
+### Bug Fixes
+
+* **reusable:** a regra para de flutuar no HEAD de main ([#20](https://github.com/wbendinelli/.github/issues/20)) ([7785510](https://github.com/wbendinelli/.github/commit/7785510fb1e29a6b27d6519437c1d95893eb4111))
+
 ## [0.6.0](https://github.com/wbendinelli/.github/compare/v0.5.0...v0.6.0) (2026-08-30)
 
 
