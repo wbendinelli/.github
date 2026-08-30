@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.1](https://github.com/wbendinelli/.github/compare/v0.4.0...v0.4.1) (2026-08-30)
+
+
+### Bug Fixes
+
+* **release:** drop separate-pull-requests, the cause of silently discarded releases ([4499ce5](https://github.com/wbendinelli/.github/commit/4499ce569b110da9df32796d85741e3bd8c8280b))
+
+
+### Documentation
+
+* replace the false release-please explanation with the proven cause ([a048329](https://github.com/wbendinelli/.github/commit/a048329632fba2997f4582f613ae8f1eccbd9c80))
+
 ## [0.4.0](https://github.com/wbendinelli/.github/compare/v0.3.0...v0.4.0) (2026-08-30)
 
 
