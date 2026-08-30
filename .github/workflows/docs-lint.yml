@@ -12,14 +12,18 @@ on:
         type: string
         default: "github"
       config-ref:
-        description: "Ref de wbendinelli/.github de onde vem o doclint. Pinar em tag."
+        description: "Ref (tag ou SHA) de wbendinelli/.github de onde vem o doclint. Obrigatorio."
         type: string
-        # SEM default "main". O default era o defeito: o `uses:` vinha da tag e a
-        # REGRA vinha do HEAD de main, a cada run, em todo caller que nao passava
-        # o input — o pin era decorativo justamente para o criterio de aprovacao.
-        # Vazio faz o checkout usar `job_workflow_sha`, o commit DESTE reusable:
-        # ferramenta e regra viajam sempre juntas, sem ninguem precisar lembrar.
-        default: ""
+        # OBRIGATORIO, e sem default. O default anterior era "main", e o
+        # reusable faz checkout DESTE repositorio na ref recebida para rodar o
+        # script e ler as regras: quem nao passava o input baixava ferramenta e
+        # regra do HEAD de main a cada run. O `uses:` vinha da tag; o criterio
+        # de aprovacao vinha do branch. Oito callers estavam nessa situacao.
+        #
+        # Exigir e melhor que eleger uma tag como default: default envelhece e
+        # vira a proxima mentira. Assim, esquecer quebra na hora, em vez de
+        # passar despercebido por meses.
+        required: true
 
 permissions:
   contents: read
@@ -36,7 +40,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: wbendinelli/.github
-          ref: ${{ inputs.config-ref || github.job_workflow_sha }}
+          ref: ${{ inputs.config-ref }}
           path: .doclint-bin
 
       - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
