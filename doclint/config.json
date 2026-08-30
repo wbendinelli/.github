@@ -102,11 +102,13 @@
           "id": "what",
           "canonical": "O que é",
           "aliases": [
-            "o que é / por quê",
-            "o que faz",
-            "sobre",
+            "a tese",
             "about",
+            "estado atual",
+            "o que faz",
+            "o que é / por quê",
             "overview",
+            "sobre",
             "what & why"
           ]
         },
@@ -114,18 +116,21 @@
           "id": "quick",
           "canonical": "Quickstart",
           "aliases": [
-            "início rápido",
-            "inicio rapido",
             "getting started",
+            "inicio rapido",
+            "instalação",
             "install",
-            "instalação"
+            "início rápido",
+            "setup",
+            "setup local"
           ]
         },
         {
           "id": "scripts",
           "canonical": "Scripts",
           "aliases": [
-            "comandos"
+            "comandos",
+            "desenvolvimento"
           ],
           "requiresTable": true
         },
@@ -135,14 +140,16 @@
           "aliases": [
             "architecture",
             "arquitetura em 1 minuto",
-            "estrutura do projeto"
+            "estrutura do projeto",
+            "stack técnica"
           ]
         },
         {
           "id": "status",
           "canonical": "Status",
           "aliases": [
-            "estado atual"
+            "estado atual",
+            "roadmap"
           ]
         },
         {
@@ -287,10 +294,13 @@
           "id": "struct",
           "canonical": "Estrutura",
           "aliases": [
-            "structure",
-            "organização",
+            "apps",
+            "conteúdo",
+            "knowledge bases ativos",
             "mapa do repositório",
-            "conteúdo"
+            "organização",
+            "repositórios da plataforma",
+            "structure"
           ]
         },
         {
@@ -337,18 +347,22 @@
           "id": "consume",
           "canonical": "Como consumir",
           "aliases": [
-            "uso",
-            "usage",
             "como usar",
-            "quickstart"
+            "política de apply",
+            "quickstart",
+            "recursos gerenciados",
+            "usage",
+            "uso"
           ]
         },
         {
           "id": "version",
           "canonical": "Versionamento",
           "aliases": [
-            "versioning",
-            "releases"
+            "releases",
+            "state management",
+            "versionamento & release",
+            "versioning"
           ]
         },
         {
