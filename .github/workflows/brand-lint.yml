@@ -1,13 +1,22 @@
 name: Brand lint (reusable)
 
-# Guardrail de marca: "SAPIANS" é sempre caixa-alta em prosa. Bloqueia PR que
-# introduza a forma title-case "Sapians" em arquivos .md. Reusa o regex canônico
-# de sapians-docs (validate.ts BRAND_BAD_FORM) — word-boundary preserva
-# identificadores técnicos (@sapians/…, sapians-repo, sapians.com.br, paths).
-# Script canônico (com --fix): scripts/brand-lint.mjs neste repo.
+# Guardrail de marca: "SAPIANS" é sempre caixa-alta em prosa.
+#
+# A regra vive em UM lugar — `doclint/rules/brand.json` no repositório de config
+# central — e este workflow faz checkout dele para rodar o script canônico.
+# Antes havia três cópias do regex (validate.ts, brand-lint.mjs e uma inline
+# aqui, que era o gate real e tinha denylist menor). Divergiam.
+#
+# Para citar a grafia errada de propósito (ADR, evidência histórica), marque a
+# linha com `brand-lint-ignore`.
 
 on:
-  workflow_call: {}
+  workflow_call:
+    inputs:
+      config-ref:
+        description: "Ref de wbendinelli/.github de onde vem a regra. Pinar em tag."
+        type: string
+        default: "main"
 
 defaults:
   run:
@@ -21,42 +30,19 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
+      - name: Checkout do repositório validado
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Checkout da config central
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: wbendinelli/.github
+          ref: ${{ inputs.config-ref }}
+          path: .brand-lint-bin
+
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 22
 
       - name: Lint brand casing
-        run: |
-          cat > /tmp/brand-lint.mjs <<'BRANDLINT'
-          import { readFileSync, readdirSync, statSync } from "node:fs";
-          import { join, basename, extname } from "node:path";
-          const DETECT = /(?<![a-zA-Z0-9_/\-@.])Sapians(?![a-zA-Z0-9_/\-])/;
-          const DENY_DIR = new Set(["node_modules", ".git", "dist", "build", ".next", "coverage", ".turbo", ".vercel", "__pycache__"]);
-          const deny = (p) => {
-            const b = basename(p);
-            const u = p.replace(/\\/g, "/");
-            return u.includes("/reports/eval/") || /^CHANGELOG/i.test(b) || b === "STYLE.md";
-          };
-          function* walk(d) {
-            let es;
-            try { es = readdirSync(d, { withFileTypes: true }); } catch { return; }
-            for (const e of es) {
-              const f = join(d, e.name);
-              if (e.isDirectory()) { if (!DENY_DIR.has(e.name)) yield* walk(f); }
-              else yield f;
-            }
-          }
-          let v = 0;
-          for (const f of walk(".")) {
-            if (deny(f)) continue;
-            if (![".md", ".mdx"].includes(extname(f))) continue;
-            let c;
-            try { c = readFileSync(f, "utf8"); } catch { continue; }
-            if (!c.includes("Sapians")) continue;
-            c.split("\n").forEach((ln, i) => {
-              if (DETECT.test(ln)) { v++; console.log(`${f}:${i + 1}: ${ln.trim().slice(0, 100)}`); }
-            });
-          }
-          console.log(v === 0 ? "✔ brand-lint: nenhuma violação." : `✘ brand-lint: ${v} violação(ões) — marca deve ser SAPIANS (caixa-alta) em prosa.`);
-          process.exit(v > 0 ? 1 : 0);
-          BRANDLINT
-          node /tmp/brand-lint.mjs
+        run: node .brand-lint-bin/scripts/brand-lint.mjs .
