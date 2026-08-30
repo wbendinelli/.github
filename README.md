@@ -6,6 +6,8 @@
 
 > **Tier:** `D` · **Classe:** `Config`
 
+## O que é
+
 Config **central de engenharia** dos repos `sapians-*`. Hospeda os **reusable workflows** (`workflow_call`) que cada repo chama em ~12 linhas, os **community health files** herdados, os **templates** e a ferramenta de **brand-lint**. Fonte única de CI/CD: um bump de versão de action aqui propaga a todos os repos.
 
 - **Aqui = como USAR** o golden path (workflows, inputs, onboarding).
@@ -28,7 +30,7 @@ flowchart TD
     I --> J[deploy / publish · fora do escopo do .github]
 ```
 
-## Reusable workflows
+## Como consumir
 
 | Workflow | Para | Gates |
 |---|---|---|
@@ -193,6 +195,25 @@ gh api repos/wbendinelli/<repo>/contents/.github/workflows
 gh api repos/wbendinelli/<repo>/contents/.github/workflows/<wf>.yml -q .content | base64 -d | grep -n cron
 ```
 
+## Versionamento
+
+Este repositório usa release-please e publica tags semver. Consumidores **devem
+pinar em tag**, nunca em `@main`:
+
+```yaml
+uses: wbendinelli/.github/.github/workflows/ci-node.yml@v0.3.0
+```
+
+Um bump aqui propaga para todos os callers em `@main` sem aviso — o que é
+exatamente o modo de falha que o pin evita. A tag é o contrato; `main` é
+trabalho em andamento.
+
+Estado atual dos consumidores (deriva conhecida, a corrigir): `sapians-api`
+em `@v0.3.0`, `sapians-docs` em `@main`, `sapians-xreset` pinado por SHA.
+
+Breaking change em reusable = major, e os callers migram um a um. O
+`config-ref` do `docs-lint.yml` segue a mesma regra.
+
 ## Toolchain pinado
 | Tool | Versão |
 |---|---|
@@ -210,4 +231,14 @@ gh api repos/wbendinelli/<repo>/contents/.github/workflows/<wf>.yml -q .content 
 - `docs/` — runbooks de manutenção.
 - [`MAINTAINERS.md`](./MAINTAINERS.md) · [`CONTRIBUTING.md`](./CONTRIBUTING.md) · [`SECURITY.md`](./SECURITY.md).
 
-> `profile/README.md` só renderiza publicamente se o repo for **público** (este é privado).
+## Links
+
+- Handbook do padrão: [`sapians-platform/handbook/golden-path.md`](https://github.com/wbendinelli/sapians-platform/blob/main/handbook/golden-path.md)
+- ADR-0015 — padrão de documentação: [`adr/0015`](https://github.com/wbendinelli/sapians-platform/blob/main/adr/0015-documentation-standard-single-source.md)
+- ADR-0016 — topologia de organizações: [`adr/0016`](https://github.com/wbendinelli/sapians-platform/blob/main/adr/0016-github-organization-topology.md)
+- Manutenção dos workflows: [`docs/maintaining-workflows.md`](./docs/maintaining-workflows.md)
+- Troubleshooting: [`docs/troubleshooting.md`](./docs/troubleshooting.md)
+
+> Este repositório é **público** desde 2026-08-30 (ADR-0016), para que seus
+> reusable workflows possam ser chamados de qualquer organização. Não versione
+> nada sensível aqui.
