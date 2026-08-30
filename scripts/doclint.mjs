@@ -192,7 +192,11 @@ function checkReadme (root, profileName, repoName, cfgData) {
 
   for (const sec of profile.sections) {
     const wanted = [sec.canonical.toLowerCase(), ...(sec.aliases || [])]
-    const found = parsed.headings.find(h => h.segs.some(s => wanted.includes(s)))
+    // Casa por igualdade OU por prefixo canônico: "Arquitetura hexagonal" é a
+    // seção de arquitetura. Exigir título exato apagaria headings melhores que
+    // o canônico, e o objetivo é que a seção exista — não que se chame igual.
+    const hit = s => wanted.some(w => s === w || s.startsWith(w + ' '))
+    const found = parsed.headings.find(h => h.segs.some(hit))
     if (!found) { add('RM020', 'README.md', 0, `seção obrigatória ausente: "## ${sec.canonical}"`); continue }
     const body = sectionBody(parsed, found)
     if (sec.requiresTable && !/^\s*\|.*\|/m.test(body))
