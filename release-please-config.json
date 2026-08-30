@@ -43,7 +43,6 @@
     }
   },
   "plugins": [],
-  "separate-pull-requests": false,
   "release-search-depth": 200,
   "commit-search-depth": 500
 }
