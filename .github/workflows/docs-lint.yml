@@ -1,0 +1,39 @@
+name: Docs lint
+
+on:
+  workflow_call:
+    inputs:
+      path:
+        description: "Diretório a validar"
+        type: string
+        default: "."
+      format:
+        description: "human | github | json"
+        type: string
+        default: "github"
+
+permissions:
+  contents: read
+
+jobs:
+  doclint:
+    name: doclint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 22
+
+      - name: Buscar o doclint da config central
+        run: |
+          set -euo pipefail
+          mkdir -p .doclint-bin/scripts .doclint-bin/doclint/rules
+          base="https://raw.githubusercontent.com/wbendinelli/.github/${{ github.job_workflow_sha || 'main' }}"
+          curl -fsSL "$base/scripts/doclint.mjs"          -o .doclint-bin/scripts/doclint.mjs
+          curl -fsSL "$base/doclint/config.json"          -o .doclint-bin/doclint/config.json
+          curl -fsSL "$base/doclint/rules/brand.json"     -o .doclint-bin/doclint/rules/brand.json
+
+      - name: doclint
+        run: node .doclint-bin/scripts/doclint.mjs "${{ inputs.path }}" --format "${{ inputs.format }}"
