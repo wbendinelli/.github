@@ -4,17 +4,36 @@ Falhas comuns no golden path e como resolver.
 
 ## release-please não cria a GitHub Release {#release-please}
 
-**Sintoma:** o PR de release (`chore: release main`) é mergeado mas nenhuma GitHub Release/tag aparece; o log mostra `There are untagged, merged release PRs outstanding - aborting`.
+**Sintoma:** o PR de release é mergeado, o `.release-please-manifest.json` **é bumpado**, mas nenhuma tag e nenhuma GitHub Release aparecem — e o run termina com `conclusion=success`. Na execução seguinte o log mostra `There are untagged, merged release PRs outstanding - aborting`.
 
-**Causa:** quirk do `release-please-action@v4` neste setup (não corta a release sozinho após o merge).
+**Causa (provada em 2026-08-30):** a chave `"separate-pull-requests": false` no `release-please-config.json` de um repositório de **pacote único**.
 
-**Nudge manual (funciona):**
+Em repo de um pacote o default de `separatePullRequests` já é `true` — escrever `false` é um override da guarda que existe exatamente para evitar isto. Com `false`, o plugin `Merge` cria a branch **sem sufixo de componente** (`release-please--branches--main` em vez de `release-please--branches--main--components--<pkg>`).
+
+Pós-merge, o release-please compara o componente extraído da **branch** (`undefined`) contra o componente configurado (`package-name`). Não bate, e ele **descarta o release em silêncio** — sem log de erro, sem falha do job.
+
+O `autorelease: pending` e o `untagged, merged release PRs outstanding` são **consequência tardia**, não causa. Perseguir esse sintoma leva à investigação errada.
+
+**Conserto permanente — uma linha:**
 ```bash
-gh release create vX.Y.Z --target main --title vX.Y.Z \
-  --notes "$(gh api repos/OWNER/REPO/contents/CHANGELOG.md --jq '.content' | base64 -d | awk '/^## /{c++} c==1{print} c==2{exit}')"
-gh pr edit <release-pr#> --remove-label "autorelease: pending"
+# apagar a chave do release-please-config.json
+"separate-pull-requests": false
 ```
-**Fix permanente:** o `release-please-action@v5` foi testado e **NÃO resolve** (aborta igual ao v4 — não é a versão da action). O quirk é mais fundo no setup (provavelmente o par `release-type: simple` + manifest, ou precisa de PAT em vez do GITHUB_TOKEN). Por ora, o nudge manual acima é o workaround.
+Não escrever `true`, não adicionar `pull-request-title-pattern`. Os title-patterns são **inertes** aqui: o descarte acontece no componente da branch, antes de qualquer parse de título.
+
+**Não muda o nome da tag.** Com `include-component-in-tag: false`, o componente resolve para vazio e a tag continua saindo como `vX.Y.Z`.
+
+**Corolário que morde:** mudar a config **não renomeia a branch de um PR já aberto**. PR de release cuja branch é `release-please--branches--main` (sem `--components--`) deve ser **FECHADO**, nunca mergeado — mergear reproduz o descarte e deixa mais um `autorelease: pending` órfão. O próximo run abre um PR novo, já com a branch correta.
+
+**Evidência da correlação, medida na frota (2026-08-30):** dos repositórios com merge real de PR de release, os que tinham `false` + `package-name` (`sapians-api`, `sapians-corpus`, `sapians-infra`, `sapians-xneuron`) **não cortaram nenhuma release sozinhos**; os que não tinham a chave ou tinham `true` (`sapians-auth`, `.github`, `sapians-engram`) **cortaram todas**.
+
+**Remediação de emergência**, só para destravar um release já preso (não é conserto):
+```bash
+gh release create vX.Y.Z --target main --title vX.Y.Z --generate-notes
+gh api -X DELETE repos/OWNER/REPO/issues/<pr#>/labels/autorelease:%20pending
+```
+
+> A explicação anterior deste verbete — "quirk do `release-please-action@v4`", com a hipótese de `release-type: simple` ou necessidade de PAT — era **falsa**. `release-type` não discrimina (falharam `python` e `simple`; funcionaram `node` e `python`) e o token estava correto nos dois grupos. Registrado aqui para que ninguém reinvestigue nessa direção.
 
 ## "GitHub Actions is not permitted to create or approve pull requests"
 
