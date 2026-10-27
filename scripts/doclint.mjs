@@ -122,6 +122,11 @@ function detectBadges (md) {
     if (/(doi\.org|zenodo)/i.test(u)) kinds.add('doi')
     if (/(pypi|npmjs|badge\.fury)/i.test(u)) kinds.add('package')
   }
+  // Private repositories cannot expose release metadata to a public badge API.
+  // Accept a stateless navigation badge only when the image itself links to
+  // GitHub releases; an unrelated image or a loose link is not this badge.
+  const releaseNavigation = /\[!\[[^\]]*\]\(https:\/\/img\.shields\.io\/badge\/releases?-GitHub-[^\s)]+\)\]\(https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/releases(?:[/?#][^\s)]*)?\)/i
+  if (releaseNavigation.test(head)) kinds.add('release')
   return kinds
 }
 

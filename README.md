@@ -330,3 +330,7 @@ Breaking change em reusable = major, e os callers migram um a um. O
 > Este repositório é **público** desde 2026-08-30 (ADR-0016), para que seus
 > reusable workflows possam ser chamados de qualquer organização. Não versione
 > nada sensível aqui.
+
+### Badges e acesso privado
+
+O template de produto usa um badge de navegação para a página Releases. Esse badge não consulta metadados privados por uma API pública nem contém credenciais. A versão entregue continua nos manifestos e na release/tag identificada; o doclint também aceita o badge de versão pública existente. Imagem sem vínculo com a página de releases ou link separado não substituem o badge.
