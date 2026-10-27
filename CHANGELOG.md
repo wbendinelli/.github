@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.8.1] — 2026-10-27
+
+### Bug Fixes
+
+- Recognize release navigation badges for private repositories without querying a public metadata API. The image must link directly to GitHub releases.
+- Keep support for public version badges; reject unrelated, unlinked or incorrectly targeted images. Product scaffolds use the compatible navigation badge.
+
+
 ## [0.8.0](https://github.com/wbendinelli/.github/compare/v0.7.0...v0.8.0) (2026-08-30)
 
 

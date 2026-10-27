@@ -7,7 +7,7 @@ Idioma: pt-BR. Troque <PLACEHOLDERS> e remova comentários.
 # <nome-do-repo>
 
 [![CI](https://github.com/<owner>/<repo>/actions/workflows/ci.yml/badge.svg)](https://github.com/<owner>/<repo>/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/<owner>/<repo>?sort=semver)](https://github.com/<owner>/<repo>/releases)
+[![Release](https://img.shields.io/badge/releases-GitHub-blue)](https://github.com/<owner>/<repo>/releases)
 [![License](https://img.shields.io/badge/license-<LICENSE>-blue.svg)](./LICENSE)
 
 > **Tier:** `<A|B|I>` · **Classe:** `<App|Service|Library>`

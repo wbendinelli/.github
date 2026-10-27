@@ -113,5 +113,30 @@ check('faixa escopada ao pai não gera falso positivo', !/brace-expansion/.test(
   violado.out.split('deixaram de valer')[1] || ''), 'brace-expansion tem duas faixas legítimas')
 check('repositório sem package.json → pula, não quebra', semPkg.code === 0, semPkg.out.trim())
 
+// ── private release navigation ─────────────────────────────────────────────
+console.log('\nselftest · badges de release em repositórios privados')
+const badgeBase = mkdtempSync(join(tmpdir(), 'sapians-private-badge-'))
+const badgeDir = join(badgeBase, 'sapians-private-fixture')
+run('new-repo.mjs', [badgeDir, '--class', 'Library', '--tier', 'C', '--name', 'sapians-private-fixture', '--owner', 'sapians-hq'])
+writeFileSync(join(badgeDir, 'LICENSE'), 'synthetic fixture\n')
+const badgeReadme = readFileSync(join(badgeDir, 'README.md'), 'utf8')
+const releaseLine = badgeReadme.split('\n').find(line => line.includes('[![Release]'))
+const staticImage = '![Releases](https://img.shields.io/badge/releases-GitHub-blue)'
+const target = 'https://github.com/sapians-hq/sapians-private-fixture/releases'
+for (const [name, line, expected] of [
+  ['badge estático vinculado a releases', `[${staticImage}](${target})`, true],
+  ['badge legado de versão pública', `[![Release](https://img.shields.io/github/v/release/sapians-hq/sapians-private-fixture)](${target})`, true],
+  ['badge estático com destino errado', `[${staticImage}](https://github.com/sapians-hq/sapians-private-fixture/actions)`, false],
+  ['imagem sem link e release solta', `${staticImage} [Release](${target})`, false],
+  ['imagem de outro assunto', `[![Ready](https://img.shields.io/badge/ready-yes-blue)](${target})`, false],
+]) {
+  writeFileSync(join(badgeDir, 'README.md'), badgeReadme.replace(releaseLine, line))
+  const result = run('doclint.mjs', [badgeDir, '--format', 'json'])
+  const findings = JSON.parse(result.out).findings
+  const accepted = !findings.some(f => f.rule === 'RM040' && f.message === 'badge de release ausente')
+  check(name, accepted === expected, result.out)
+}
+rmSync(badgeBase, { recursive: true, force: true })
+
 if (fails.length) { console.error(`\n${fails.length} asserção(ões) falharam.`); process.exit(1) }
 console.log('\nTodas as asserções passaram.')
