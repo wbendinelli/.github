@@ -34,7 +34,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7.0.1
         with:
           # String '0'/'1' — em expressão GH, 0 é falsy e quebraria `&& 0 || 1`.
           fetch-depth: ${{ inputs.full-history && '0' || '1' }}
